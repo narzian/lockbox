@@ -60,10 +60,15 @@
   }
   
   .dropdown {
-    @apply relative group;
+    position: relative;
   }
   
   .dropdown-menu {
-    @apply hidden group-hover:block absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white z-10;
+    @apply hidden absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white z-10;
+  }
+
+  /* Add hover state for dropdown menu manually */
+  .dropdown:hover .dropdown-menu {
+    display: block;
   }
 }

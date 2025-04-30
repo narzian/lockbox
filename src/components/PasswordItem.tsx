@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { getCategoryColor } from '@/lib/utils';
-import { Facebook, Instagram, Amazon } from 'lucide-react';
+import { Facebook, Instagram, ShoppingCart } from 'lucide-react';
 
 interface Password {
   id: string;
@@ -29,7 +29,7 @@ export const PasswordItem: React.FC<PasswordItemProps> = ({ password, viewMode =
       case 'instagram':
         return <Instagram className="h-5 w-5 text-vault-black" />;
       case 'amazon':
-        return <Amazon className="h-5 w-5 text-vault-black" />;
+        return <ShoppingCart className="h-5 w-5 text-vault-black" />;
       default:
         return <span className="text-lg">{icon}</span>;
     }
