@@ -7,6 +7,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Grid, List, ArrowUpAZ, ArrowDownAZ } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { getCategoryColor } from '@/lib/utils';
 
 // Mock data for categories and passwords
 const categories = [
@@ -119,7 +121,7 @@ const sortByRecent = (a: any, b: any, ascending = true) => {
 const Dashboard: React.FC = () => {
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState("All");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list" | "category">("category");
   const [sortMode, setSortMode] = useState<"nameAsc" | "nameDesc" | "recentAsc" | "recentDesc">("nameAsc");
 
   // Sort passwords based on current sort mode
@@ -145,12 +147,30 @@ const Dashboard: React.FC = () => {
     ? sortPasswords(mockPasswords) 
     : sortPasswords(mockPasswords.filter(pw => pw.category === activeTab));
 
+  // Get counts of passwords per category
+  const getCategoryCounts = () => {
+    const counts: {[key: string]: number} = {};
+    categories.forEach(cat => {
+      if (cat === "All") {
+        counts[cat] = mockPasswords.length;
+      } else {
+        counts[cat] = mockPasswords.filter(pw => pw.category === cat).length;
+      }
+    });
+    return counts;
+  };
+
+  const categoryCounts = getCategoryCounts();
+
   return (
     <div className="space-y-4 animate-fade-in">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Your Vault</h1>
         <div className="flex gap-2">
-          <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as "grid" | "list")}>
+          <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as "grid" | "list" | "category")}>
+            <ToggleGroupItem value="category" aria-label="Category view">
+              <Grid className="h-4 w-4" />
+            </ToggleGroupItem>
             <ToggleGroupItem value="grid" aria-label="Grid view">
               <Grid className="h-4 w-4" />
             </ToggleGroupItem>
@@ -191,35 +211,66 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
       
-      <Tabs defaultValue="All" onValueChange={setActiveTab}>
-        <div className="mb-4 overflow-auto">
-          <TabsList className="flex space-x-2 pb-1">
-            {categories.map(category => (
-              <TabsTrigger 
+      {viewMode === "category" ? (
+        <div className="grid grid-cols-2 gap-3 animate-slide-up">
+          {categories.map(category => {
+            const categoryColor = getCategoryColor(category);
+            return (
+              <button 
                 key={category} 
-                value={category}
-                className="whitespace-nowrap"
+                onClick={() => {
+                  setActiveTab(category);
+                  setViewMode("grid");
+                }}
+                className="w-full"
               >
-                {category}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+                <Card className="vault-card h-24 flex flex-col justify-between">
+                  <div 
+                    className="category-pill inline-block self-start" 
+                    style={{backgroundColor: `${categoryColor}20`, color: categoryColor}}
+                  >
+                    {category}
+                  </div>
+                  <div className="flex justify-between items-end w-full">
+                    <span className="text-2xl font-bold">{categoryCounts[category]}</span>
+                    <span className="text-xs text-muted-foreground">Logins</span>
+                  </div>
+                </Card>
+              </button>
+            );
+          })}
         </div>
-
-        {categories.map(category => (
-          <TabsContent key={category} value={category} className="mt-0">
-            <div className={viewMode === "grid" ? "grid gap-3 animate-slide-up" : "space-y-3 animate-slide-up"}>
-              {(category === "All" ? filteredPasswords : filteredPasswords)
-                .filter(pw => category === "All" || pw.category === category)
-                .map(password => (
-                  <Link key={password.id} to={`/password/${password.id}`}>
-                    <PasswordItem password={password} viewMode={viewMode} />
-                  </Link>
+      ) : (
+        <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab}>
+          <div className="mb-4 overflow-auto">
+            <TabsList className="flex space-x-2 pb-1">
+              {categories.map(category => (
+                <TabsTrigger 
+                  key={category} 
+                  value={category}
+                  className="whitespace-nowrap"
+                >
+                  {category}
+                </TabsTrigger>
               ))}
-            </div>
-          </TabsContent>
-        ))}
-      </Tabs>
+            </TabsList>
+          </div>
+
+          {categories.map(category => (
+            <TabsContent key={category} value={category} className="mt-0">
+              <div className={viewMode === "grid" ? "grid gap-3 animate-slide-up" : "space-y-3 animate-slide-up"}>
+                {(category === "All" ? filteredPasswords : filteredPasswords)
+                  .filter(pw => category === "All" || pw.category === category)
+                  .map(password => (
+                    <Link key={password.id} to={`/password/${password.id}`}>
+                      <PasswordItem password={password} viewMode={viewMode} />
+                    </Link>
+                ))}
+              </div>
+            </TabsContent>
+          ))}
+        </Tabs>
+      )}
     </div>
   );
 };
