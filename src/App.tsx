@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { MobileLayout } from "./layouts/MobileLayout";
+import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import PasswordDetail from "./pages/PasswordDetail";
 import AddPassword from "./pages/AddPassword";
@@ -21,8 +22,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          <Route path="/" element={<Index />} />
           <Route element={<MobileLayout />}>
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/password/:id" element={<PasswordDetail />} />
             <Route path="/add" element={<AddPassword />} />
             <Route path="/search" element={<Search />} />

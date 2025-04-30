@@ -14,7 +14,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 15%;
 
-    --primary: 250 83% 75%;
+    --primary: 222 47% 11%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 240 25% 96%;
@@ -23,15 +23,15 @@
     --muted: 240 25% 96%;
     --muted-foreground: 240 10% 50%;
 
-    --accent: 250 83% 95%;
-    --accent-foreground: 250 83% 40%;
+    --accent: 222 47% 95%;
+    --accent-foreground: 222 47% 20%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 240 10% 90%;
     --input: 240 10% 90%;
-    --ring: 250 83% 75%;
+    --ring: 222 47% 30%;
 
     --radius: 1rem;
   }
@@ -57,5 +57,13 @@
   
   .bottom-nav-item {
     @apply flex flex-col items-center justify-center w-full py-2;
+  }
+  
+  .dropdown {
+    @apply relative group;
+  }
+  
+  .dropdown-menu {
+    @apply hidden group-hover:block absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white z-10;
   }
 }

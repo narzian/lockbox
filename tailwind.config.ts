@@ -63,14 +63,15 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Custom colors for our password manager
+				// Updated colors for our password manager - black theme
 				vault: {
-					purple: '#9b87f5',
-					darkPurple: '#7E69AB',
-					softPurple: '#E5DEFF',
-					neutral: '#F1F0FB',
 					black: '#1A1F2C',
+					darkBlack: '#0F1216',
+					softBlack: '#2D3748',
+					neutral: '#F1F0FB',
 					gray: '#8E9196',
+					purple: '#9b87f5',
+					softPurple: '#E5DEFF',
 				}
 			},
 			borderRadius: {
@@ -103,12 +104,17 @@ export default {
 					'0%': { transform: 'translateY(10px)', opacity: '0' },
 					'100%': { transform: 'translateY(0)', opacity: '1' }
 				},
+				'spin-slow': {
+					'0%': { transform: 'rotate(0deg)' },
+					'100%': { transform: 'rotate(360deg)' }
+				},
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'fade-in': 'fade-in 0.3s ease-out',
 				'slide-up': 'slide-up 0.3s ease-out',
+				'spin-slow': 'spin-slow 3s linear infinite',
 			}
 		}
 	},
