@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card } from '@/components/ui/card';
-import { getCategoryColor } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 import { Facebook, Instagram, ShoppingCart } from 'lucide-react';
 
 interface Password {
@@ -19,8 +19,6 @@ interface PasswordItemProps {
 }
 
 export const PasswordItem: React.FC<PasswordItemProps> = ({ password, viewMode = "grid" }) => {
-  const categoryColor = getCategoryColor(password.category);
-  
   // Render different icons based on the service
   const renderIcon = (icon: string) => {
     switch(icon) {
@@ -52,12 +50,9 @@ export const PasswordItem: React.FC<PasswordItemProps> = ({ password, viewMode =
             </div>
             
             <div className="flex flex-col items-end">
-              <div 
-                className="category-pill mb-1" 
-                style={{backgroundColor: `${categoryColor}20`, color: categoryColor}}
-              >
+              <Badge variant="outline" className="bg-secondary mb-1">
                 {password.category}
-              </div>
+              </Badge>
               <p className="text-xs text-muted-foreground">{password.lastUsed}</p>
             </div>
           </div>
@@ -81,12 +76,9 @@ export const PasswordItem: React.FC<PasswordItemProps> = ({ password, viewMode =
         </div>
         
         <div className="flex flex-col items-end">
-          <div 
-            className="category-pill mb-1" 
-            style={{backgroundColor: `${categoryColor}20`, color: categoryColor}}
-          >
+          <Badge variant="outline" className="bg-secondary mb-1">
             {password.category}
-          </div>
+          </Badge>
           <p className="text-xs text-muted-foreground">{password.lastUsed}</p>
         </div>
       </div>

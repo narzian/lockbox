@@ -5,14 +5,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PasswordItem } from '@/components/PasswordItem';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Grid, List, ArrowUpAZ, ArrowDownAZ } from "lucide-react";
+import { Grid, List, ArrowUpAZ, ArrowDownAZ, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { getCategoryColor } from '@/lib/utils';
+import { Badge } from "@/components/ui/badge";
 
 // Mock data for categories and passwords
 const categories = [
-  "All", "Social", "Finance", "Work", "Shopping", "Education", "Government"
+  "Social", "Finance", "Work", "Shopping", "Education", "Government", "Entertainment"
 ];
 
 const mockPasswords = [
@@ -151,16 +151,20 @@ const Dashboard: React.FC = () => {
   const getCategoryCounts = () => {
     const counts: {[key: string]: number} = {};
     categories.forEach(cat => {
-      if (cat === "All") {
-        counts[cat] = mockPasswords.length;
-      } else {
-        counts[cat] = mockPasswords.filter(pw => pw.category === cat).length;
-      }
+      counts[cat] = mockPasswords.filter(pw => pw.category === cat).length;
     });
+    // Add All count
+    counts["All"] = mockPasswords.length;
     return counts;
   };
 
   const categoryCounts = getCategoryCounts();
+
+  // Handle view all passwords
+  const handleViewAll = () => {
+    setActiveTab("All");
+    setViewMode("grid");
+  };
 
   return (
     <div className="space-y-4 animate-fade-in">
@@ -169,7 +173,7 @@ const Dashboard: React.FC = () => {
         <div className="flex gap-2">
           <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as "grid" | "list" | "category")}>
             <ToggleGroupItem value="category" aria-label="Category view">
-              <Grid className="h-4 w-4" />
+              <LayoutGrid className="h-4 w-4" />
             </ToggleGroupItem>
             <ToggleGroupItem value="grid" aria-label="Grid view">
               <Grid className="h-4 w-4" />
@@ -193,7 +197,7 @@ const Dashboard: React.FC = () => {
               </span>
             </Button>
             
-            <div className="dropdown-menu absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white hidden group-hover:block z-10">
+            <div className="dropdown-menu">
               <button onClick={() => setSortMode("nameAsc")} className="block px-4 py-2 text-sm w-full text-left hover:bg-muted">
                 Name (A-Z)
               </button>
@@ -212,10 +216,19 @@ const Dashboard: React.FC = () => {
       </div>
       
       {viewMode === "category" ? (
-        <div className="grid grid-cols-2 gap-3 animate-slide-up">
-          {categories.map(category => {
-            const categoryColor = getCategoryColor(category);
-            return (
+        <div className="space-y-4">
+          <div className="flex justify-center mb-4">
+            <Button 
+              onClick={handleViewAll}
+              variant="default"
+              className="w-full max-w-xs"
+            >
+              View All Passwords ({categoryCounts["All"]})
+            </Button>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-3 animate-slide-up">
+            {categories.map(category => (
               <button 
                 key={category} 
                 onClick={() => {
@@ -225,11 +238,10 @@ const Dashboard: React.FC = () => {
                 className="w-full"
               >
                 <Card className="vault-card h-24 flex flex-col justify-between">
-                  <div 
-                    className="category-pill inline-block self-start" 
-                    style={{backgroundColor: `${categoryColor}20`, color: categoryColor}}
-                  >
-                    {category}
+                  <div className="flex justify-between items-start w-full">
+                    <Badge variant="outline" className="bg-secondary">
+                      {category}
+                    </Badge>
                   </div>
                   <div className="flex justify-between items-end w-full">
                     <span className="text-2xl font-bold">{categoryCounts[category]}</span>
@@ -237,13 +249,14 @@ const Dashboard: React.FC = () => {
                   </div>
                 </Card>
               </button>
-            );
-          })}
+            ))}
+          </div>
         </div>
       ) : (
         <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab}>
           <div className="mb-4 overflow-auto">
             <TabsList className="flex space-x-2 pb-1">
+              <TabsTrigger value="All" className="whitespace-nowrap">All</TabsTrigger>
               {categories.map(category => (
                 <TabsTrigger 
                   key={category} 
@@ -256,10 +269,20 @@ const Dashboard: React.FC = () => {
             </TabsList>
           </div>
 
+          <TabsContent key="All" value="All" className="mt-0">
+            <div className={viewMode === "grid" ? "grid gap-3 animate-slide-up" : "space-y-3 animate-slide-up"}>
+              {filteredPasswords.map(password => (
+                <Link key={password.id} to={`/password/${password.id}`}>
+                  <PasswordItem password={password} viewMode={viewMode} />
+                </Link>
+              ))}
+            </div>
+          </TabsContent>
+          
           {categories.map(category => (
             <TabsContent key={category} value={category} className="mt-0">
               <div className={viewMode === "grid" ? "grid gap-3 animate-slide-up" : "space-y-3 animate-slide-up"}>
-                {(category === "All" ? filteredPasswords : filteredPasswords)
+                {filteredPasswords
                   .filter(pw => category === "All" || pw.category === category)
                   .map(password => (
                     <Link key={password.id} to={`/password/${password.id}`}>
