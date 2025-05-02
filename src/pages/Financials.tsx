@@ -2,31 +2,36 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { FinancialItem } from '@/components/FinancialItem';
 import { PasswordProtection } from '@/components/PasswordProtection';
 import { EmptyState } from '@/components/EmptyState';
+import { AddFinancialForm } from '@/components/AddFinancialForm';
 
-// This would be fetched from a secure storage in a real app
-const financialItems: { id: string; type: 'card' | 'upi' | 'account'; name: string; lastDigits?: string; expiryDate?: string; upiId?: string; accountNumber?: string; bankName?: string; }[] = [
-  // Empty initial state
-];
+// Empty initial state
+const financialItems: { id: string; type: 'card' | 'upi' | 'account'; name: string; lastDigits?: string; expiryDate?: string; upiId?: string; accountNumber?: string; bankName?: string; }[] = [];
 
 const Financials: React.FC = () => {
   const [unlocked, setUnlocked] = useState(false);
-  const [items] = useState(financialItems);
+  const [items, setItems] = useState(financialItems);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const navigate = useNavigate();
   
   const handleAddFinancial = () => {
-    toast.info("Add financial information functionality would open here");
-    // In a real app, navigate to add form
-    // navigate('/financials/add');
+    setIsAddDialogOpen(true);
   };
 
   const handleUnlock = () => {
     setUnlocked(true);
     toast.success("Financial section unlocked");
+  };
+  
+  const handleAddSuccess = () => {
+    // In a real app, this would fetch the updated list
+    // For now, we'll just show a success message
+    toast.success("Financial information saved");
   };
 
   if (!unlocked) {
@@ -57,6 +62,18 @@ const Financials: React.FC = () => {
           ))}
         </div>
       )}
+      
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Financial Information</DialogTitle>
+          </DialogHeader>
+          <AddFinancialForm 
+            onClose={() => setIsAddDialogOpen(false)} 
+            onSuccess={handleAddSuccess} 
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

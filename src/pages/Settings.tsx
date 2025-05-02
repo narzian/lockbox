@@ -1,14 +1,21 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Card } from '@/components/ui/card';
-import { Lock, Fingerprint, Shield, Trash, User } from 'lucide-react';
+import { Lock, Fingerprint, Shield, Trash, User, Key } from 'lucide-react';
 import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 
 const Settings: React.FC = () => {
+  const [showPinReset, setShowPinReset] = useState(false);
+  const [currentPin, setCurrentPin] = useState('');
+  const [newPin, setNewPin] = useState('');
+  const [confirmPin, setConfirmPin] = useState('');
+  
   const handleBiometricToggle = (checked: boolean) => {
     toast.success(`Biometric authentication ${checked ? 'enabled' : 'disabled'}`);
   };
@@ -23,6 +30,38 @@ const Settings: React.FC = () => {
   
   const handleDeleteAllData = () => {
     toast.info("Delete all data confirmation would show here");
+  };
+  
+  const handleResetPin = () => {
+    // In a real app, this would be securely stored
+    const defaultPin = '1234';
+    
+    if (currentPin === '') {
+      toast.error("Current PIN is required");
+      return;
+    }
+    
+    if (currentPin !== defaultPin) {
+      toast.error("Current PIN is incorrect");
+      return;
+    }
+    
+    if (newPin === '') {
+      toast.error("New PIN is required");
+      return;
+    }
+    
+    if (newPin !== confirmPin) {
+      toast.error("New PIN and confirmation do not match");
+      return;
+    }
+    
+    // In a real app, this would update the PIN in secure storage
+    toast.success("PIN reset successfully");
+    setShowPinReset(false);
+    setCurrentPin('');
+    setNewPin('');
+    setConfirmPin('');
   };
   
   return (
@@ -58,6 +97,65 @@ const Settings: React.FC = () => {
                 defaultChecked 
                 onCheckedChange={handleAutoLockToggle} 
               />
+            </div>
+            
+            <div>
+              <Label className="font-medium">Financial Section PIN</Label>
+              <p className="text-sm text-muted-foreground mb-2">
+                Change the PIN used to access financial information
+              </p>
+              <Dialog open={showPinReset} onOpenChange={setShowPinReset}>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className="w-full flex items-center justify-center"
+                  >
+                    <Key className="h-4 w-4 mr-2" />
+                    Reset Financial PIN
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Reset Financial PIN</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 py-2">
+                    <div>
+                      <Label htmlFor="current-pin">Current PIN</Label>
+                      <Input
+                        id="current-pin"
+                        type="password"
+                        placeholder="Enter current PIN"
+                        value={currentPin}
+                        onChange={(e) => setCurrentPin(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="new-pin">New PIN</Label>
+                      <Input
+                        id="new-pin"
+                        type="password"
+                        placeholder="Enter new PIN"
+                        value={newPin}
+                        onChange={(e) => setNewPin(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="confirm-pin">Confirm New PIN</Label>
+                      <Input
+                        id="confirm-pin"
+                        type="password"
+                        placeholder="Confirm new PIN"
+                        value={confirmPin}
+                        onChange={(e) => setConfirmPin(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="ghost" onClick={() => setShowPinReset(false)}>Cancel</Button>
+                    <Button onClick={handleResetPin}>Update PIN</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </Card>
         </section>

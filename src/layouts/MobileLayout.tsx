@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Outlet, useLocation, Link } from 'react-router-dom';
-import { Home, Plus, Settings, Lock, CreditCard } from 'lucide-react';
+import { Home, Plus, Settings, Lock, CreditCard, Search } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 export const MobileLayout: React.FC = () => {
@@ -32,16 +32,24 @@ export const MobileLayout: React.FC = () => {
             <span className="text-xs mt-1">Home</span>
           </Link>
           
+          <Link to="/search" className={`bottom-nav-item ${isActive('/search') ? 'text-primary' : 'text-muted-foreground'}`}>
+            <Search className="h-5 w-5" />
+            <span className="text-xs mt-1">Search</span>
+          </Link>
+          
+          {/* Centered Add button */}
+          <div className="relative flex flex-col items-center justify-center">
+            <Link to="/add" className="bottom-nav-item">
+              <div className="bg-primary rounded-full p-3 absolute -top-6 shadow-md">
+                <Plus className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <span className="text-xs mt-9">Add</span>
+            </Link>
+          </div>
+          
           <Link to="/financials" className={`bottom-nav-item ${isActive('/financials') ? 'text-primary' : 'text-muted-foreground'}`}>
             <CreditCard className="h-5 w-5" />
             <span className="text-xs mt-1">Cards</span>
-          </Link>
-          
-          <Link to="/add" className={`bottom-nav-item ${isActive('/add') ? 'text-primary' : 'text-muted-foreground'}`}>
-            <div className="bg-primary rounded-full p-3 -mt-6 shadow-md">
-              <Plus className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="text-xs mt-1">Add</span>
           </Link>
           
           <Link to="/settings" className={`bottom-nav-item ${isActive('/settings') ? 'text-primary' : 'text-muted-foreground'}`}>
