@@ -1,32 +1,41 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Copy, Trash, Edit } from 'lucide-react';
+import { Eye, EyeOff, Copy, Trash, Edit, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { getCategoryColor } from '@/lib/utils';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { knownServices, openServiceLink } from '@/lib/serviceDetection';
 
-// Mock data - in a real app this would come from a secure storage
-const mockPasswords = [
-  { 
-    id: "1", 
-    title: "Facebook", 
-    username: "user@example.com", 
-    password: "securePass123!",
-    url: "https://facebook.com",
-    category: "Social",
-    lastUsed: "2 days ago",
-    notes: "Personal account",
-    icon: "👤"
-  },
-  // Other passwords from the Dashboard's mock data would be here
-];
+// Empty mock data
+const mockPasswords: {
+  id: string;
+  title: string;
+  username: string;
+  password: string;
+  url?: string;
+  category: string;
+  lastUsed: string;
+  notes?: string;
+  icon: string;
+}[] = [];
 
 const PasswordDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
   // Find the password by ID
   const password = mockPasswords.find(p => p.id === id);
@@ -36,12 +45,10 @@ const PasswordDetail: React.FC = () => {
       <div className="flex flex-col items-center justify-center h-[80vh]">
         <h2 className="text-xl font-semibold mb-2">Password Not Found</h2>
         <p className="text-muted-foreground mb-4">The password you're looking for doesn't exist.</p>
-        <Button onClick={() => navigate('/')}>Back to Dashboard</Button>
+        <Button onClick={() => navigate('/dashboard')}>Back to Dashboard</Button>
       </div>
     );
   }
-  
-  const categoryColor = getCategoryColor(password.category);
   
   const handleCopyUsername = () => {
     navigator.clipboard.writeText(password.username);
@@ -54,14 +61,32 @@ const PasswordDetail: React.FC = () => {
   };
   
   const handleEdit = () => {
-    // In a real app, navigate to edit page
-    toast.info("Edit functionality would open here");
+    navigate(`/password/edit/${id}`);
   };
   
   const handleDelete = () => {
-    // In a real app, show confirmation dialog and delete
-    toast.info("Delete confirmation would show here");
+    // In a real app, this would delete from storage
+    toast.success(`Password for ${password.title} deleted`);
+    navigate('/dashboard');
   };
+  
+  const handleOpenLink = () => {
+    // Check if this is a known service
+    const service = Object.values(knownServices).find(s => 
+      s.name.toLowerCase() === password.title.toLowerCase()
+    );
+    
+    if (service) {
+      openServiceLink(service);
+    } else if (password.url) {
+      window.open(password.url, '_blank');
+    }
+  };
+
+  // Detect if the service has a deep link or external URL
+  const hasLink = Boolean(password.url) || Object.values(knownServices).some(
+    s => s.name.toLowerCase() === password.title.toLowerCase()
+  );
 
   return (
     <div className="animate-fade-in">
@@ -79,19 +104,27 @@ const PasswordDetail: React.FC = () => {
       {/* Password card */}
       <Card className="p-5 mb-6">
         <div className="flex items-center mb-4">
-          <div className="w-12 h-12 rounded-full bg-vault-softPurple flex items-center justify-center mr-3">
+          <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center mr-3">
             <span className="text-2xl">{password.icon}</span>
           </div>
           
-          <div>
+          <div className="flex-grow">
             <h2 className="text-xl font-semibold">{password.title}</h2>
-            <div 
-              className="category-pill inline-block" 
-              style={{backgroundColor: `${categoryColor}20`, color: categoryColor}}
-            >
+            <Badge className="bg-secondary text-foreground">
               {password.category}
-            </div>
+            </Badge>
           </div>
+          
+          {hasLink && (
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={handleOpenLink}
+              title="Open application or website"
+            >
+              <ExternalLink className="h-4 w-4" />
+            </Button>
+          )}
         </div>
         
         {password.url && (
@@ -99,7 +132,7 @@ const PasswordDetail: React.FC = () => {
             href={password.url} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="text-sm text-vault-purple hover:underline block mb-4"
+            className="text-sm text-primary hover:underline block mb-4"
           >
             {password.url}
           </a>
@@ -174,11 +207,27 @@ const PasswordDetail: React.FC = () => {
         <Button 
           className="flex-1" 
           variant="destructive" 
-          onClick={handleDelete}
+          onClick={() => setIsDeleteDialogOpen(true)}
         >
           <Trash className="h-4 w-4 mr-2" /> Delete
         </Button>
       </div>
+      
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the password for {password.title}. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

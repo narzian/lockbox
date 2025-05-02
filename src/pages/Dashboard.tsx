@@ -5,86 +5,23 @@ import { CategoryCard } from '@/components/dashboard/CategoryCard';
 import { CategoryTabs } from '@/components/dashboard/CategoryTabs';
 import { CreateCategoryDialog } from '@/components/dashboard/CreateCategoryDialog';
 import { SortDropdown } from '@/components/dashboard/SortDropdown';
+import { EmptyState } from '@/components/EmptyState';
+import { LockKeyhole } from 'lucide-react';
 
-// Mock data for categories and passwords
+// Initial empty categories
 const initialCategories = [
   "Social", "Finance", "Work", "Shopping", "Education", "Government", "Entertainment"
 ];
 
-const mockPasswords = [
-  { 
-    id: "1", 
-    title: "Facebook", 
-    username: "user@example.com", 
-    category: "Social",
-    lastUsed: "2 days ago",
-    icon: "facebook"
-  },
-  { 
-    id: "2", 
-    title: "Gmail", 
-    username: "user@gmail.com", 
-    category: "Social",
-    lastUsed: "1 day ago",
-    icon: "📧"
-  },
-  { 
-    id: "3", 
-    title: "Amazon", 
-    username: "user@example.com", 
-    category: "Shopping",
-    lastUsed: "1 week ago",
-    icon: "amazon"
-  },
-  { 
-    id: "4", 
-    title: "Chase Bank", 
-    username: "username123", 
-    category: "Finance",
-    lastUsed: "3 days ago",
-    icon: "💳"
-  },
-  { 
-    id: "5", 
-    title: "Netflix", 
-    username: "user@example.com", 
-    category: "Entertainment",
-    lastUsed: "5 days ago",
-    icon: "📺"
-  },
-  { 
-    id: "6", 
-    title: "LinkedIn", 
-    username: "professional@email.com", 
-    category: "Social",
-    lastUsed: "2 weeks ago",
-    icon: "👔"
-  },
-  { 
-    id: "7", 
-    title: "Tax Portal", 
-    username: "citizen123", 
-    category: "Government",
-    lastUsed: "1 month ago",
-    icon: "🏛️"
-  },
-  { 
-    id: "8", 
-    title: "University Portal", 
-    username: "student@university.edu", 
-    category: "Education",
-    lastUsed: "3 weeks ago",
-    icon: "🎓"
-  },
-  { 
-    id: "9", 
-    title: "Instagram", 
-    username: "user@example.com", 
-    category: "Social",
-    lastUsed: "4 days ago",
-    icon: "instagram"
-  },
-];
+// Empty passwords array to start fresh
+const mockPasswords: {
+  id: string;
+  title: string;
+  username: string;
+  category: string;
+  lastUsed: string;
+  icon: string;
+}[] = [];
 
 // Sort functions
 const sortByName = (a: any, b: any, ascending = true) => {
@@ -204,16 +141,26 @@ const Dashboard: React.FC = () => {
             </Button>
           </div>
           
-          <div className="grid grid-cols-2 gap-3 animate-slide-up">
-            {categories.map(category => (
-              <CategoryCard 
-                key={category}
-                category={category} 
-                count={categoryCounts[category]}
-                onClick={() => handleViewCategory(category)}
-              />
-            ))}
-          </div>
+          {categoryCounts["All"] === 0 ? (
+            <EmptyState 
+              title="No passwords saved yet"
+              description="Add your first password to get started"
+              actionLabel="Add Password"
+              onAction={() => { window.location.href = "/add"; }}
+              icon={<LockKeyhole size={40} />}
+            />
+          ) : (
+            <div className="grid grid-cols-2 gap-3 animate-slide-up">
+              {categories.map(category => (
+                <CategoryCard 
+                  key={category}
+                  category={category} 
+                  count={categoryCounts[category]}
+                  onClick={() => handleViewCategory(category)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       ) : (
         <CategoryTabs 
