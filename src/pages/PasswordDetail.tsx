@@ -5,6 +5,7 @@ import { Eye, EyeOff, Copy, Trash, Edit, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { 
   AlertDialog,
