@@ -59,11 +59,11 @@ const mockPasswords = [
 
 const Search: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState(mockPasswords);
+  const [searchResults, setSearchResults] = useState<typeof mockPasswords>([]);
   
   useEffect(() => {
     if (searchQuery.trim() === '') {
-      setSearchResults(mockPasswords);
+      setSearchResults([]);
       return;
     }
     
@@ -92,7 +92,7 @@ const Search: React.FC = () => {
         />
       </div>
       
-      {searchResults.length > 0 ? (
+      {searchQuery.trim() !== '' && searchResults.length > 0 ? (
         <div className="grid gap-3 animate-slide-up">
           {searchResults.map(password => (
             <Link key={password.id} to={`/password/${password.id}`}>
@@ -100,7 +100,7 @@ const Search: React.FC = () => {
             </Link>
           ))}
         </div>
-      ) : (
+      ) : searchQuery.trim() !== '' ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <div className="bg-vault-softPurple rounded-full p-6 mb-4">
             <SearchIcon className="h-8 w-8 text-vault-purple" />
@@ -110,7 +110,7 @@ const Search: React.FC = () => {
             Try a different search term or browse by category
           </p>
         </div>
-      )}
+      ) : null}
     </div>
   );
 };

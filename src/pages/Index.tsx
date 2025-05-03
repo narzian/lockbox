@@ -23,7 +23,7 @@ const Index = () => {
             <Lock className="h-8 w-8 text-vault-black animate-spin-slow" />
           </div>
         </div>
-        <h1 className="text-2xl font-bold text-vault-black">Vault Keeper</h1>
+        <h1 className="text-2xl font-bold text-vault-black">LockBox</h1>
         <p className="mt-2 text-muted-foreground">Secure Password Manager</p>
       </div>
     </div>

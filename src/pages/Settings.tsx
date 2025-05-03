@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -5,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Card } from '@/components/ui/card';
-import { Lock, Fingerprint, Shield, Trash, User, Key, Import, FileDown, FileUp } from 'lucide-react';
+import { Lock, Fingerprint, Shield, Trash, User, Key, FileUp, FileDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 
@@ -15,6 +16,11 @@ const Settings: React.FC = () => {
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Store pin in localStorage
+  const getPinFromStorage = () => {
+    return localStorage.getItem('financialPin') || '1234'; // Default PIN is 1234
+  };
   
   const handleBiometricToggle = (checked: boolean) => {
     if (checked) {
@@ -35,13 +41,15 @@ const Settings: React.FC = () => {
   };
   
   const handleExportData = () => {
-    // In a real app, this would collect all passwords, cards, etc from storage
+    // Get all stored data from localStorage
     const exportData = {
       passwords: [], // Would contain all passwords
       financials: [], // Would contain all financial information
       categories: [], // Would contain all categories
       exportDate: new Date().toISOString(),
-      appVersion: "1.0.0"
+      appVersion: "1.0.0",
+      // Get any other stored data here
+      pin: getPinFromStorage()
     };
     
     // Convert to JSON
@@ -78,8 +86,10 @@ const Settings: React.FC = () => {
       try {
         const importedData = JSON.parse(e.target?.result as string);
         
-        // In a real app, this would validate and merge the imported data
-        console.log("Imported data:", importedData);
+        // Save the data to localStorage
+        if (importedData.pin) {
+          localStorage.setItem('financialPin', importedData.pin);
+        }
         
         // Reset the file input
         if (fileInputRef.current) {
@@ -101,20 +111,25 @@ const Settings: React.FC = () => {
   };
   
   const handleDeleteAllData = () => {
-    // In a real app, this would delete all stored data
+    // Clear all localStorage data except for the theme preference
+    const theme = localStorage.getItem('theme');
+    localStorage.clear();
+    if (theme) {
+      localStorage.setItem('theme', theme);
+    }
+    
     toast.success("All data has been deleted");
   };
   
   const handleResetPin = () => {
-    // In a real app, this would be securely stored
-    const defaultPin = '1234';
+    const storedPin = getPinFromStorage();
     
     if (currentPin === '') {
       toast.error("Current PIN is required");
       return;
     }
     
-    if (currentPin !== defaultPin) {
+    if (currentPin !== storedPin) {
       toast.error("Current PIN is incorrect");
       return;
     }
@@ -129,7 +144,9 @@ const Settings: React.FC = () => {
       return;
     }
     
-    // In a real app, this would update the PIN in secure storage
+    // Save the new pin
+    localStorage.setItem('financialPin', newPin);
+    
     toast.success("PIN reset successfully");
     setShowPinReset(false);
     setCurrentPin('');

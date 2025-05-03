@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Copy, Trash, Edit, ExternalLink, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,29 +19,24 @@ import {
 } from "@/components/ui/alert-dialog";
 import { knownServices, openServiceLink } from '@/lib/serviceDetection';
 
-// Empty mock data
-const mockPasswords: {
-  id: string;
-  title: string;
-  username: string;
-  password: string;
-  url?: string;
-  category: string;
-  lastUsed: string;
-  notes?: string;
-  icon: string;
-  createdAt: string;
-  updatedAt: string;
-}[] = [];
-
 const PasswordDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [password, setPassword] = useState<any>(null);
   
-  // Find the password by ID
-  const password = mockPasswords.find(p => p.id === id);
+  // Load the password from localStorage
+  useEffect(() => {
+    const storedPasswords = localStorage.getItem('passwords');
+    if (storedPasswords) {
+      const passwords = JSON.parse(storedPasswords);
+      const found = passwords.find((p: any) => p.id === id);
+      if (found) {
+        setPassword(found);
+      }
+    }
+  }, [id]);
   
   if (!password) {
     return (
@@ -68,7 +63,16 @@ const PasswordDetail: React.FC = () => {
   };
   
   const handleDelete = () => {
-    // In a real app, this would delete from storage
+    // Get all passwords
+    const storedPasswords = localStorage.getItem('passwords');
+    if (storedPasswords) {
+      const passwords = JSON.parse(storedPasswords);
+      // Filter out the current password
+      const updatedPasswords = passwords.filter((p: any) => p.id !== id);
+      // Save back to localStorage
+      localStorage.setItem('passwords', JSON.stringify(updatedPasswords));
+    }
+    
     toast.success(`Password for ${password.title} deleted`);
     navigate('/dashboard');
   };
@@ -88,6 +92,7 @@ const PasswordDetail: React.FC = () => {
 
   // Format the dates to be more readable
   const formatDate = (dateString: string) => {
+    if (!dateString) return "N/A";
     return new Date(dateString).toLocaleString();
   };
 

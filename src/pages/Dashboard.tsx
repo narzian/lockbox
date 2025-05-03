@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { CategoryCard } from '@/components/dashboard/CategoryCard';
@@ -23,6 +23,8 @@ const mockPasswords: {
   category: string;
   lastUsed: string;
   icon: string;
+  createdAt?: string;
+  updatedAt?: string;
 }[] = [];
 
 // Sort functions
@@ -53,12 +55,43 @@ const sortByRecent = (a: any, b: any, ascending = true) => {
   return (timeA - timeB) * factor;
 };
 
+// Save data to localStorage
+const saveCategories = (categories: string[]) => {
+  localStorage.setItem('categories', JSON.stringify(categories));
+};
+
+const savePasswords = (passwords: typeof mockPasswords) => {
+  localStorage.setItem('passwords', JSON.stringify(passwords));
+};
+
+// Load data from localStorage
+const loadCategories = (): string[] => {
+  const storedCategories = localStorage.getItem('categories');
+  return storedCategories ? JSON.parse(storedCategories) : initialCategories;
+};
+
+const loadPasswords = (): typeof mockPasswords => {
+  const storedPasswords = localStorage.getItem('passwords');
+  return storedPasswords ? JSON.parse(storedPasswords) : mockPasswords;
+};
+
 const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("All");
   const [activeCategoryIndex, setActiveCategoryIndex] = useState<number>(0);
   const [viewMode, setViewMode] = useState<"category" | "passwords">("category");
   const [sortMode, setSortMode] = useState<"nameAsc" | "nameDesc" | "recentAsc" | "recentDesc">("nameAsc");
-  const [categories, setCategories] = useState<string[]>(initialCategories);
+  const [categories, setCategories] = useState<string[]>(loadCategories());
+  const [passwords, setPasswords] = useState<typeof mockPasswords>(loadPasswords());
+
+  // Save categories to localStorage when changed
+  useEffect(() => {
+    saveCategories(categories);
+  }, [categories]);
+
+  // Save passwords to localStorage when changed
+  useEffect(() => {
+    savePasswords(passwords);
+  }, [passwords]);
 
   // Sort passwords based on current sort mode
   const sortPasswords = (passwords: typeof mockPasswords) => {
@@ -80,17 +113,17 @@ const Dashboard: React.FC = () => {
 
   // Filter passwords based on active category
   const filteredPasswords = activeTab === "All" 
-    ? sortPasswords(mockPasswords) 
-    : sortPasswords(mockPasswords.filter(pw => pw.category === activeTab));
+    ? sortPasswords(passwords) 
+    : sortPasswords(passwords.filter(pw => pw.category === activeTab));
 
   // Get counts of passwords per category
   const getCategoryCounts = () => {
     const counts: {[key: string]: number} = {};
     categories.forEach(cat => {
-      counts[cat] = mockPasswords.filter(pw => pw.category === cat).length;
+      counts[cat] = passwords.filter(pw => pw.category === cat).length;
     });
     // Add All count
-    counts["All"] = mockPasswords.length;
+    counts["All"] = passwords.length;
     return counts;
   };
 

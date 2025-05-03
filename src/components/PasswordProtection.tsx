@@ -18,14 +18,15 @@ export const PasswordProtection: React.FC<PasswordProtectionProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(false);
   
-  // In a real app, this would be stored securely or use biometrics
-  // Here we use a simple PIN for demo purposes
-  const correctPassword = '1234';
+  // Get the PIN from localStorage or use the default PIN
+  const getCorrectPassword = () => {
+    return localStorage.getItem('financialPin') || '1234';
+  };
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (password === correctPassword) {
+    if (password === getCorrectPassword()) {
       setError(false);
       onSuccess();
     } else {

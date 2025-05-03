@@ -16,8 +16,10 @@ const formSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   
   // Credit card specific fields
+  cardNumber: z.string().optional(),
   lastDigits: z.string().optional(),
   expiryDate: z.string().optional(),
+  cvv: z.string().optional(),
   
   // UPI specific fields
   upiId: z.string().optional(),
@@ -25,6 +27,7 @@ const formSchema = z.object({
   // Bank account specific fields
   accountNumber: z.string().optional(),
   bankName: z.string().optional(),
+  ifsc: z.string().optional(), // Added IFSC code for bank accounts
   
   // Optional notes field
   notes: z.string().optional(),
@@ -45,20 +48,30 @@ export const AddFinancialForm: React.FC<AddFinancialFormProps> = ({ onClose, onS
     defaultValues: {
       type: 'card',
       name: '',
+      cardNumber: '',
       lastDigits: '',
       expiryDate: '',
+      cvv: '',
       upiId: '',
       accountNumber: '',
       bankName: '',
+      ifsc: '',
       notes: '',
     },
   });
   
   const onSubmit = (values: FormValues) => {
+    // If card number is provided, extract last 4 digits
+    if (values.cardNumber) {
+      values.lastDigits = values.cardNumber.slice(-4);
+    }
+    
     // Generate a unique ID for the new item
     const newItem = {
       ...values,
       id: crypto.randomUUID(), // Add a unique ID
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     
     // In a real app, this would save to secure storage
@@ -149,14 +162,14 @@ export const AddFinancialForm: React.FC<AddFinancialFormProps> = ({ onClose, onS
             <>
               <FormField
                 control={form.control}
-                name="lastDigits"
+                name="cardNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Last 4 Digits</FormLabel>
+                    <FormLabel>Card Number</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="1234" 
-                        maxLength={4}
+                        placeholder="1234 5678 9012 3456" 
+                        maxLength={19}
                         {...field} 
                       />
                     </FormControl>
@@ -174,6 +187,25 @@ export const AddFinancialForm: React.FC<AddFinancialFormProps> = ({ onClose, onS
                     <FormControl>
                       <Input 
                         placeholder="MM/YY" 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="cvv"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>CVV</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="123" 
+                        maxLength={4}
+                        type="password"
                         {...field} 
                       />
                     </FormControl>
@@ -227,11 +259,29 @@ export const AddFinancialForm: React.FC<AddFinancialFormProps> = ({ onClose, onS
                 name="accountNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Last 4 Digits of Account Number</FormLabel>
+                    <FormLabel>Account Number</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="1234" 
-                        maxLength={4}
+                        placeholder="Full account number" 
+                        maxLength={20}
+                        type="password"
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="ifsc"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>IFSC Code (Optional)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="IFSC Code" 
                         {...field} 
                       />
                     </FormControl>

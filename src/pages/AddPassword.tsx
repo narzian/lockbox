@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,10 +16,6 @@ import { Eye, EyeOff, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { checkPasswordStrength, generatePassword } from '@/lib/utils';
 
-const categories = [
-  "Social", "Finance", "Work", "Shopping", "Entertainment", "Education", "Government"
-];
-
 const AddPassword: React.FC = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -31,6 +27,17 @@ const AddPassword: React.FC = () => {
     category: '',
     notes: '',
   });
+  const [categories, setCategories] = useState<string[]>([
+    "Social", "Finance", "Work", "Shopping", "Entertainment", "Education", "Government"
+  ]);
+  
+  // Load categories from localStorage
+  useEffect(() => {
+    const storedCategories = localStorage.getItem('categories');
+    if (storedCategories) {
+      setCategories(JSON.parse(storedCategories));
+    }
+  }, []);
   
   const passwordStrength = checkPasswordStrength(formData.password);
   
@@ -58,10 +65,33 @@ const AddPassword: React.FC = () => {
       return;
     }
     
-    // In a real app, save to secure storage
-    console.log("Saving password:", formData);
+    // Create a new password object
+    const newPassword = {
+      id: crypto.randomUUID(),
+      title: formData.title,
+      username: formData.username,
+      password: formData.password,
+      url: formData.url || '',
+      category: formData.category,
+      notes: formData.notes || '',
+      lastUsed: "Just now",
+      icon: "🔒",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    // Get existing passwords from localStorage
+    const storedPasswords = localStorage.getItem('passwords');
+    const existingPasswords = storedPasswords ? JSON.parse(storedPasswords) : [];
+    
+    // Add the new password
+    const updatedPasswords = [...existingPasswords, newPassword];
+    
+    // Save to localStorage
+    localStorage.setItem('passwords', JSON.stringify(updatedPasswords));
+    
     toast.success("Password saved successfully");
-    navigate('/');
+    navigate('/dashboard');
   };
   
   return (
