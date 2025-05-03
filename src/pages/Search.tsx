@@ -5,62 +5,32 @@ import { Input } from '@/components/ui/input';
 import { Search as SearchIcon } from 'lucide-react';
 import { PasswordItem } from '@/components/PasswordItem';
 
-// Mock data
-const mockPasswords = [
-  { 
-    id: "1", 
-    title: "Facebook", 
-    username: "user@example.com", 
-    category: "Social",
-    lastUsed: "2 days ago",
-    icon: "👤"
-  },
-  { 
-    id: "2", 
-    title: "Gmail", 
-    username: "user@gmail.com", 
-    category: "Social",
-    lastUsed: "1 day ago",
-    icon: "📧"
-  },
-  { 
-    id: "3", 
-    title: "Amazon", 
-    username: "user@example.com", 
-    category: "Shopping",
-    lastUsed: "1 week ago",
-    icon: "🛒"
-  },
-  { 
-    id: "4", 
-    title: "Chase Bank", 
-    username: "username123", 
-    category: "Finance",
-    lastUsed: "3 days ago",
-    icon: "💳"
-  },
-  { 
-    id: "5", 
-    title: "Netflix", 
-    username: "user@example.com", 
-    category: "Entertainment",
-    lastUsed: "5 days ago",
-    icon: "📺"
-  },
-  { 
-    id: "6", 
-    title: "LinkedIn", 
-    username: "professional@email.com", 
-    category: "Social",
-    lastUsed: "2 weeks ago",
-    icon: "👔"
-  },
-];
+interface Password {
+  id: string;
+  title: string;
+  username: string;
+  category: string;
+  lastUsed?: string;
+  icon: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 const Search: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<typeof mockPasswords>([]);
+  const [searchResults, setSearchResults] = useState<Password[]>([]);
+  const [allPasswords, setAllPasswords] = useState<Password[]>([]);
   
+  // Load passwords from localStorage
+  useEffect(() => {
+    const storedPasswords = localStorage.getItem('passwords');
+    if (storedPasswords) {
+      const parsedPasswords = JSON.parse(storedPasswords);
+      setAllPasswords(parsedPasswords);
+    }
+  }, []);
+  
+  // Filter passwords when search query changes
   useEffect(() => {
     if (searchQuery.trim() === '') {
       setSearchResults([]);
@@ -68,15 +38,16 @@ const Search: React.FC = () => {
     }
     
     const query = searchQuery.toLowerCase();
-    const filtered = mockPasswords.filter(
+    const filtered = allPasswords.filter(
       password => 
-        password.title.toLowerCase().includes(query) ||
-        password.username.toLowerCase().includes(query) ||
-        password.category.toLowerCase().includes(query)
+        password.title?.toLowerCase().includes(query) ||
+        password.username?.toLowerCase().includes(query) ||
+        password.category?.toLowerCase().includes(query) ||
+        password.notes?.toLowerCase().includes(query)
     );
     
     setSearchResults(filtered);
-  }, [searchQuery]);
+  }, [searchQuery, allPasswords]);
   
   return (
     <div className="animate-fade-in">
@@ -89,6 +60,7 @@ const Search: React.FC = () => {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-10"
+          autoFocus
         />
       </div>
       

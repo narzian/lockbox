@@ -43,9 +43,9 @@ const Settings: React.FC = () => {
   const handleExportData = () => {
     // Get all stored data from localStorage
     const exportData = {
-      passwords: [], // Would contain all passwords
-      financials: [], // Would contain all financial information
-      categories: [], // Would contain all categories
+      passwords: JSON.parse(localStorage.getItem('passwords') || '[]'),
+      financials: JSON.parse(localStorage.getItem('financials') || '[]'),
+      categories: JSON.parse(localStorage.getItem('categories') || '[]'),
       exportDate: new Date().toISOString(),
       appVersion: "1.0.0",
       // Get any other stored data here
@@ -87,6 +87,18 @@ const Settings: React.FC = () => {
         const importedData = JSON.parse(e.target?.result as string);
         
         // Save the data to localStorage
+        if (importedData.passwords) {
+          localStorage.setItem('passwords', JSON.stringify(importedData.passwords));
+        }
+        
+        if (importedData.financials) {
+          localStorage.setItem('financials', JSON.stringify(importedData.financials));
+        }
+        
+        if (importedData.categories) {
+          localStorage.setItem('categories', JSON.stringify(importedData.categories));
+        }
+        
         if (importedData.pin) {
           localStorage.setItem('financialPin', importedData.pin);
         }

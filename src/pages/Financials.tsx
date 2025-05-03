@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -10,25 +10,19 @@ import { PasswordProtection } from '@/components/PasswordProtection';
 import { EmptyState } from '@/components/EmptyState';
 import { AddFinancialForm } from '@/components/AddFinancialForm';
 
-// Empty initial state
-const initialFinancialItems: { 
-  id: string; 
-  type: 'card' | 'upi' | 'account'; 
-  name: string; 
-  lastDigits?: string; 
-  expiryDate?: string; 
-  upiId?: string; 
-  accountNumber?: string; 
-  bankName?: string;
-  createdAt: string;
-  updatedAt: string;
-}[] = [];
-
 const Financials: React.FC = () => {
   const [unlocked, setUnlocked] = useState(false);
-  const [items, setItems] = useState(initialFinancialItems);
+  const [items, setItems] = useState<any[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const navigate = useNavigate();
+  
+  // Load financial items from localStorage
+  useEffect(() => {
+    const storedItems = localStorage.getItem('financials');
+    if (storedItems) {
+      setItems(JSON.parse(storedItems));
+    }
+  }, []);
   
   const handleAddFinancial = () => {
     setIsAddDialogOpen(true);
@@ -48,7 +42,12 @@ const Financials: React.FC = () => {
     };
     
     // Add the new item to the list
-    setItems(prevItems => [...prevItems, itemWithTimestamp]);
+    const updatedItems = [...items, itemWithTimestamp];
+    setItems(updatedItems);
+    
+    // Save to localStorage
+    localStorage.setItem('financials', JSON.stringify(updatedItems));
+    
     setIsAddDialogOpen(false);
     toast.success("Financial information saved");
   };

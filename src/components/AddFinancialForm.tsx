@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -16,10 +16,19 @@ const formSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   
   // Credit card specific fields
-  cardNumber: z.string().optional(),
+  cardNumber: z.string().optional()
+    .refine(val => !val || /^(\d{4}\s?){3}\d{4}$/.test(val.replace(/\s/g, '')), {
+      message: "Card number must be 16 digits",
+    }),
   lastDigits: z.string().optional(),
-  expiryDate: z.string().optional(),
-  cvv: z.string().optional(),
+  expiryDate: z.string().optional()
+    .refine(val => !val || /^(0[1-9]|1[0-2])\/\d{2}$/.test(val), {
+      message: "Expiry date must be in MM/YY format and month must be between 01-12",
+    }),
+  cvv: z.string().optional()
+    .refine(val => !val || /^\d{3,4}$/.test(val), {
+      message: "CVV must be 3 or 4 digits",
+    }),
   
   // UPI specific fields
   upiId: z.string().optional(),
@@ -37,7 +46,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 interface AddFinancialFormProps {
   onClose: () => void;
-  onSuccess: (newItem: any) => void; // Updated to accept the newItem parameter
+  onSuccess: (newItem: any) => void;
 }
 
 export const AddFinancialForm: React.FC<AddFinancialFormProps> = ({ onClose, onSuccess }) => {
@@ -63,7 +72,7 @@ export const AddFinancialForm: React.FC<AddFinancialFormProps> = ({ onClose, onS
   const onSubmit = (values: FormValues) => {
     // If card number is provided, extract last 4 digits
     if (values.cardNumber) {
-      values.lastDigits = values.cardNumber.slice(-4);
+      values.lastDigits = values.cardNumber.replace(/\s/g, '').slice(-4);
     }
     
     // Generate a unique ID for the new item
@@ -86,6 +95,42 @@ export const AddFinancialForm: React.FC<AddFinancialFormProps> = ({ onClose, onS
   const handleTypeChange = (value: string) => {
     setSelectedType(value as 'card' | 'upi' | 'account');
     form.setValue('type', value as 'card' | 'upi' | 'account');
+  };
+
+  // Format card number with spaces after every 4 digits
+  const formatCardNumber = (value: string) => {
+    const digits = value.replace(/\D/g, '');
+    const formattedValue = digits.match(/.{1,4}/g)?.join(' ') || digits;
+    return formattedValue.substring(0, 19); // 16 digits + 3 spaces
+  };
+
+  // Format expiry date to automatically add / after month
+  const formatExpiryDate = (value: string) => {
+    const cleanValue = value.replace(/\D/g, '');
+    
+    if (cleanValue.length >= 2) {
+      const month = parseInt(cleanValue.substring(0, 2));
+      
+      // Ensure month is between 01-12
+      if (month >= 1 && month <= 12) {
+        return cleanValue.length > 2
+          ? `${cleanValue.substring(0, 2)}/${cleanValue.substring(2, 4)}`
+          : `${cleanValue.substring(0, 2)}/`;
+      } else if (month > 12) {
+        // If user enters month > 12, convert to 12
+        return cleanValue.length > 2
+          ? `12/${cleanValue.substring(2, 4)}`
+          : `12/`;
+      } else {
+        // Ensure single-digit months are padded with 0
+        const paddedMonth = month.toString().padStart(2, '0');
+        return cleanValue.length > 2
+          ? `${paddedMonth}/${cleanValue.substring(2, 4)}`
+          : `${paddedMonth}/`;
+      }
+    }
+    
+    return cleanValue;
   };
   
   return (
@@ -170,7 +215,11 @@ export const AddFinancialForm: React.FC<AddFinancialFormProps> = ({ onClose, onS
                       <Input 
                         placeholder="1234 5678 9012 3456" 
                         maxLength={19}
-                        {...field} 
+                        value={field.value}
+                        onChange={(e) => {
+                          const formattedValue = formatCardNumber(e.target.value);
+                          field.onChange(formattedValue);
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -187,7 +236,12 @@ export const AddFinancialForm: React.FC<AddFinancialFormProps> = ({ onClose, onS
                     <FormControl>
                       <Input 
                         placeholder="MM/YY" 
-                        {...field} 
+                        maxLength={5}
+                        value={field.value}
+                        onChange={(e) => {
+                          const formattedValue = formatExpiryDate(e.target.value);
+                          field.onChange(formattedValue);
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -206,7 +260,14 @@ export const AddFinancialForm: React.FC<AddFinancialFormProps> = ({ onClose, onS
                         placeholder="123" 
                         maxLength={4}
                         type="password"
-                        {...field} 
+                        onChange={(e) => {
+                          // Only allow digits
+                          const value = e.target.value.replace(/\D/g, '');
+                          if (value.length <= 4) {
+                            field.onChange(value);
+                          }
+                        }}
+                        value={field.value}
                       />
                     </FormControl>
                     <FormMessage />
@@ -263,7 +324,7 @@ export const AddFinancialForm: React.FC<AddFinancialFormProps> = ({ onClose, onS
                     <FormControl>
                       <Input 
                         placeholder="Full account number" 
-                        maxLength={20}
+                        maxLength={30}
                         type="password"
                         {...field} 
                       />

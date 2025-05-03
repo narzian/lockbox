@@ -1,11 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Copy, Trash, Edit, ExternalLink, Clock } from 'lucide-react';
+import { Eye, EyeOff, Copy, Trash, Edit, ExternalLink, Clock, Save, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { 
   AlertDialog,
@@ -25,6 +26,8 @@ const PasswordDetail: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [password, setPassword] = useState<any>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedPassword, setEditedPassword] = useState<any>(null);
   
   // Load the password from localStorage
   useEffect(() => {
@@ -34,6 +37,7 @@ const PasswordDetail: React.FC = () => {
       const found = passwords.find((p: any) => p.id === id);
       if (found) {
         setPassword(found);
+        setEditedPassword(JSON.parse(JSON.stringify(found))); // Deep copy for editing
       }
     }
   }, [id]);
@@ -59,7 +63,34 @@ const PasswordDetail: React.FC = () => {
   };
   
   const handleEdit = () => {
-    navigate(`/password/edit/${id}`);
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    // Reset to original values
+    setEditedPassword(JSON.parse(JSON.stringify(password)));
+    setIsEditing(false);
+  };
+
+  const handleSaveEdit = () => {
+    // Update the password in localStorage
+    const storedPasswords = localStorage.getItem('passwords');
+    if (storedPasswords) {
+      const passwords = JSON.parse(storedPasswords);
+      const updatedPasswords = passwords.map((p: any) => 
+        p.id === id ? {...editedPassword, updatedAt: new Date().toISOString()} : p
+      );
+      localStorage.setItem('passwords', JSON.stringify(updatedPasswords));
+      
+      // Update the current password state
+      setPassword({...editedPassword, updatedAt: new Date().toISOString()});
+      setIsEditing(false);
+      toast.success("Password updated successfully");
+    }
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setEditedPassword({...editedPassword, [field]: value});
   };
   
   const handleDelete = () => {
@@ -122,13 +153,21 @@ const PasswordDetail: React.FC = () => {
           </div>
           
           <div className="flex-grow">
-            <h2 className="text-xl font-semibold">{password.title}</h2>
+            {isEditing ? (
+              <Input 
+                value={editedPassword.title} 
+                onChange={(e) => handleInputChange('title', e.target.value)}
+                className="mb-1"
+              />
+            ) : (
+              <h2 className="text-xl font-semibold">{password.title}</h2>
+            )}
             <Badge className="bg-secondary text-foreground">
               {password.category}
             </Badge>
           </div>
           
-          {hasLink && (
+          {hasLink && !isEditing && (
             <Button 
               variant="outline" 
               size="icon"
@@ -140,15 +179,26 @@ const PasswordDetail: React.FC = () => {
           )}
         </div>
         
-        {password.url && (
-          <a 
-            href={password.url} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-sm text-primary hover:underline block mb-4"
-          >
-            {password.url}
-          </a>
+        {isEditing ? (
+          <div className="mb-4">
+            <label className="text-sm font-medium text-muted-foreground">URL</label>
+            <Input 
+              value={editedPassword.url || ''} 
+              onChange={(e) => handleInputChange('url', e.target.value)}
+              placeholder="https://example.com"
+            />
+          </div>
+        ) : (
+          password.url && (
+            <a 
+              href={password.url} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-sm text-primary hover:underline block mb-4"
+            >
+              {password.url}
+            </a>
+          )
         )}
         
         <Separator className="my-4" />
@@ -158,26 +208,45 @@ const PasswordDetail: React.FC = () => {
           <div>
             <label className="text-sm font-medium text-muted-foreground">Username</label>
             <div className="flex items-center mt-1">
-              <div className="flex-grow border rounded-lg p-2 bg-secondary">
-                {password.username}
-              </div>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={handleCopyUsername}
-                className="ml-2"
-              >
-                <Copy className="h-4 w-4" />
-              </Button>
+              {isEditing ? (
+                <Input 
+                  value={editedPassword.username} 
+                  onChange={(e) => handleInputChange('username', e.target.value)}
+                  className="flex-grow"
+                />
+              ) : (
+                <div className="flex-grow border rounded-lg p-2 bg-secondary">
+                  {password.username}
+                </div>
+              )}
+              {!isEditing && (
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={handleCopyUsername}
+                  className="ml-2"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </div>
           
           <div>
             <label className="text-sm font-medium text-muted-foreground">Password</label>
             <div className="flex items-center mt-1">
-              <div className="flex-grow border rounded-lg p-2 bg-secondary">
-                {showPassword ? password.password : '••••••••••••'}
-              </div>
+              {isEditing ? (
+                <Input 
+                  type={showPassword ? 'text' : 'password'}
+                  value={editedPassword.password} 
+                  onChange={(e) => handleInputChange('password', e.target.value)}
+                  className="flex-grow"
+                />
+              ) : (
+                <div className="flex-grow border rounded-lg p-2 bg-secondary">
+                  {showPassword ? password.password : '••••••••••••'}
+                </div>
+              )}
               <Button 
                 variant="ghost" 
                 size="icon" 
@@ -186,25 +255,35 @@ const PasswordDetail: React.FC = () => {
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={handleCopyPassword}
-                className="ml-2"
-              >
-                <Copy className="h-4 w-4" />
-              </Button>
+              {!isEditing && (
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={handleCopyPassword}
+                  className="ml-2"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </div>
           
-          {password.notes && (
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Notes</label>
-              <div className="border rounded-lg p-2 bg-secondary mt-1">
-                {password.notes}
-              </div>
-            </div>
-          )}
+          <div>
+            <label className="text-sm font-medium text-muted-foreground">Notes</label>
+            {isEditing ? (
+              <Input 
+                value={editedPassword.notes || ''} 
+                onChange={(e) => handleInputChange('notes', e.target.value)}
+                placeholder="Add notes (optional)"
+              />
+            ) : (
+              password.notes && (
+                <div className="border rounded-lg p-2 bg-secondary mt-1">
+                  {password.notes}
+                </div>
+              )
+            )}
+          </div>
           
           {/* Timestamp information */}
           <div className="pt-2">
@@ -221,22 +300,41 @@ const PasswordDetail: React.FC = () => {
       </Card>
       
       {/* Action buttons */}
-      <div className="flex space-x-2">
-        <Button 
-          className="flex-1" 
-          variant="outline" 
-          onClick={handleEdit}
-        >
-          <Edit className="h-4 w-4 mr-2" /> Edit
-        </Button>
-        <Button 
-          className="flex-1" 
-          variant="destructive" 
-          onClick={() => setIsDeleteDialogOpen(true)}
-        >
-          <Trash className="h-4 w-4 mr-2" /> Delete
-        </Button>
-      </div>
+      {isEditing ? (
+        <div className="flex space-x-2">
+          <Button 
+            className="flex-1" 
+            variant="outline" 
+            onClick={handleCancelEdit}
+          >
+            <X className="h-4 w-4 mr-2" /> Cancel
+          </Button>
+          <Button 
+            className="flex-1" 
+            variant="default" 
+            onClick={handleSaveEdit}
+          >
+            <Save className="h-4 w-4 mr-2" /> Save
+          </Button>
+        </div>
+      ) : (
+        <div className="flex space-x-2">
+          <Button 
+            className="flex-1" 
+            variant="outline" 
+            onClick={handleEdit}
+          >
+            <Edit className="h-4 w-4 mr-2" /> Edit
+          </Button>
+          <Button 
+            className="flex-1" 
+            variant="destructive" 
+            onClick={() => setIsDeleteDialogOpen(true)}
+          >
+            <Trash className="h-4 w-4 mr-2" /> Delete
+          </Button>
+        </div>
+      )}
       
       {/* Delete confirmation dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
