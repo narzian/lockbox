@@ -4,13 +4,16 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Facebook, Instagram, ShoppingCart } from 'lucide-react';
 
-interface Password {
+export interface Password {
   id: string;
   title: string;
   username: string;
   category: string;
   lastUsed: string;
   icon: string;
+  createdAt?: string;
+  updatedAt?: string;
+  notes?: string;
 }
 
 interface PasswordItemProps {

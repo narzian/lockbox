@@ -5,18 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Search as SearchIcon } from 'lucide-react';
 import { PasswordItem } from '@/components/PasswordItem';
 
-// Update the Password interface to match the one from PasswordItem.tsx
-interface Password {
-  id: string;
-  title: string;
-  username: string;
-  category: string;
-  lastUsed?: string; // Make lastUsed optional to match how it's used
-  icon: string;
-  createdAt?: string;
-  updatedAt?: string;
-  notes?: string; // Add notes property since it's being used in filtering
-}
+// Import the Password type directly from PasswordItem to avoid type conflicts
+import type { Password as PasswordItemType } from '@/components/PasswordItem';
+
+// Define our interface using the imported type
+type Password = PasswordItemType;
 
 const Search: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
