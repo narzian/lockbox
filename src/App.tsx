@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { MobileLayout } from "./layouts/MobileLayout";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
@@ -15,7 +15,15 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "./components/ThemeProvider";
 
-const queryClient = new QueryClient();
+// Create a more resilient query client with retry logic
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -33,7 +41,10 @@ const App = () => (
               <Route path="/financials" element={<Financials />} />
               <Route path="/search" element={<Search />} />
               <Route path="/settings" element={<Settings />} />
+              {/* Add a fallback route for any unknown paths within the app layout */}
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Route>
+            {/* Global 404 handler */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

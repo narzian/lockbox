@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Outlet, useLocation, Link } from 'react-router-dom';
-import { Home, Plus, Settings, Lock, CreditCard, Search } from 'lucide-react';
+import { Home, Plus, Settings, Lock, CreditCard, Search, ArrowLeft } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 export const MobileLayout: React.FC = () => {
@@ -14,7 +14,7 @@ export const MobileLayout: React.FC = () => {
       <header className="sticky top-0 z-10 bg-card shadow-sm border-b border-border px-4 py-3 flex justify-between items-center">
         <div className="flex items-center gap-2">
           <Lock className="h-5 w-5 text-primary" />
-          <h1 className="text-lg font-semibold">LockBox</h1>
+          <h1 className="text-lg font-semibold font-sans tracking-normal">LockBox</h1>
         </div>
         <ThemeToggle />
       </header>
@@ -29,12 +29,12 @@ export const MobileLayout: React.FC = () => {
         <div className="flex items-center justify-around h-16">
           <Link to="/dashboard" className={`bottom-nav-item ${isActive('/dashboard') ? 'text-primary' : 'text-muted-foreground'}`}>
             <Home className="h-5 w-5" />
-            <span className="text-xs mt-1">Home</span>
+            <span className="text-xs mt-1 font-sans">Home</span>
           </Link>
           
           <Link to="/search" className={`bottom-nav-item ${isActive('/search') ? 'text-primary' : 'text-muted-foreground'}`}>
             <Search className="h-5 w-5" />
-            <span className="text-xs mt-1">Search</span>
+            <span className="text-xs mt-1 font-sans">Search</span>
           </Link>
           
           {/* Centered Add button */}
@@ -43,18 +43,18 @@ export const MobileLayout: React.FC = () => {
               <div className="bg-primary rounded-full p-3 absolute -top-6 shadow-md">
                 <Plus className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="text-xs mt-9">Add</span>
+              <span className="text-xs mt-9 font-sans">Add</span>
             </Link>
           </div>
           
           <Link to="/financials" className={`bottom-nav-item ${isActive('/financials') ? 'text-primary' : 'text-muted-foreground'}`}>
             <CreditCard className="h-5 w-5" />
-            <span className="text-xs mt-1">Cards</span>
+            <span className="text-xs mt-1 font-sans">Cards</span>
           </Link>
           
           <Link to="/settings" className={`bottom-nav-item ${isActive('/settings') ? 'text-primary' : 'text-muted-foreground'}`}>
             <Settings className="h-5 w-5" />
-            <span className="text-xs mt-1">Settings</span>
+            <span className="text-xs mt-1 font-sans">Settings</span>
           </Link>
         </div>
       </nav>
