@@ -3,134 +3,26 @@ import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Card } from '@/components/ui/card';
-import { Lock, Fingerprint, Shield, Trash, User, Key, FileUp, FileDown } from 'lucide-react';
-import { toast } from 'sonner';
+import { Lock, Shield, Trash, User, Key, FileUp, FileDown, AlertTriangle } from 'lucide-react';
+import { toast } from '@/components/ui/sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 const Settings: React.FC = () => {
   const [showPinReset, setShowPinReset] = useState(false);
   const [currentPin, setCurrentPin] = useState('');
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
+  const [showImportConfirm, setShowImportConfirm] = useState(false);
+  const [pendingImportFile, setPendingImportFile] = useState<File | null>(null);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Store pin in localStorage
   const getPinFromStorage = () => {
     return localStorage.getItem('financialPin') || '1234'; // Default PIN is 1234
-  };
-  
-  const handleBiometricToggle = (checked: boolean) => {
-    if (checked) {
-      // In a real app, this would integrate with the device's biometric capabilities
-      toast.success("Biometric authentication enabled");
-    } else {
-      toast.success("Biometric authentication disabled");
-    }
-  };
-  
-  const handleAutoLockToggle = (checked: boolean) => {
-    if (checked) {
-      // In a real app, this would set up auto-lock listeners
-      toast.success("Auto-lock enabled - App will lock after 5 minutes of inactivity");
-    } else {
-      toast.success("Auto-lock disabled");
-    }
-  };
-  
-  const handleExportData = () => {
-    // Get all stored data from localStorage
-    const exportData = {
-      passwords: JSON.parse(localStorage.getItem('passwords') || '[]'),
-      financials: JSON.parse(localStorage.getItem('financials') || '[]'),
-      categories: JSON.parse(localStorage.getItem('categories') || '[]'),
-      exportDate: new Date().toISOString(),
-      appVersion: "1.0.0",
-      // Get any other stored data here
-      pin: getPinFromStorage()
-    };
-    
-    // Convert to JSON
-    const dataStr = JSON.stringify(exportData, null, 2);
-    
-    // Create a download link
-    const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
-    const exportFileDefaultName = `lockbox-export-${new Date().toLocaleDateString().replace(/\//g, '-')}.json`;
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-    
-    toast.success("Data exported successfully");
-  };
-  
-  const handleImportClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-  
-  const handleImportData = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    
-    if (!file) {
-      return;
-    }
-    
-    const reader = new FileReader();
-    
-    reader.onload = (e) => {
-      try {
-        const importedData = JSON.parse(e.target?.result as string);
-        
-        // Save the data to localStorage
-        if (importedData.passwords) {
-          localStorage.setItem('passwords', JSON.stringify(importedData.passwords));
-        }
-        
-        if (importedData.financials) {
-          localStorage.setItem('financials', JSON.stringify(importedData.financials));
-        }
-        
-        if (importedData.categories) {
-          localStorage.setItem('categories', JSON.stringify(importedData.categories));
-        }
-        
-        if (importedData.pin) {
-          localStorage.setItem('financialPin', importedData.pin);
-        }
-        
-        // Reset the file input
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
-        
-        toast.success("Data imported successfully");
-      } catch (error) {
-        toast.error("Error importing data: Invalid file format");
-        console.error(error);
-      }
-    };
-    
-    reader.onerror = () => {
-      toast.error("Error reading file");
-    };
-    
-    reader.readAsText(file);
-  };
-  
-  const handleDeleteAllData = () => {
-    // Clear all localStorage data except for the theme preference
-    const theme = localStorage.getItem('theme');
-    localStorage.clear();
-    if (theme) {
-      localStorage.setItem('theme', theme);
-    }
-    
-    toast.success("All data has been deleted");
   };
   
   const handleResetPin = () => {
@@ -166,6 +58,134 @@ const Settings: React.FC = () => {
     setConfirmPin('');
   };
   
+  const handleExportData = () => {
+    // Get all stored data from localStorage
+    const exportData = {
+      passwords: JSON.parse(localStorage.getItem('passwords') || '[]'),
+      financials: JSON.parse(localStorage.getItem('financials') || '[]'),
+      categories: JSON.parse(localStorage.getItem('categories') || '[]'),
+      exportDate: new Date().toISOString(),
+      appVersion: "1.0.0",
+      pin: getPinFromStorage()
+    };
+    
+    // Convert to JSON
+    const dataStr = JSON.stringify(exportData, null, 2);
+    
+    // Create a download link
+    const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
+    const exportFileDefaultName = `lockbox-export-${new Date().toLocaleDateString().replace(/\//g, '-')}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+    
+    toast.success("Data exported successfully", {
+      description: "Your data has been exported to a file. Keep it safe!"
+    });
+    
+    // After successful export, prompt user if they want to clear current data
+    setTimeout(() => {
+      setShowImportConfirm(true);
+    }, 500);
+  };
+  
+  const handleImportClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+  
+  const handleImportFileSelected = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    
+    if (!file) {
+      return;
+    }
+    
+    setPendingImportFile(file);
+    setShowImportConfirm(true);
+  };
+  
+  const processImport = (file: File) => {
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      try {
+        const importedData = JSON.parse(e.target?.result as string);
+        
+        // Validate the imported data structure
+        if (!importedData.passwords && !importedData.financials) {
+          throw new Error("Invalid import format");
+        }
+        
+        // Save the data to localStorage
+        if (importedData.passwords) {
+          localStorage.setItem('passwords', JSON.stringify(importedData.passwords));
+        }
+        
+        if (importedData.financials) {
+          localStorage.setItem('financials', JSON.stringify(importedData.financials));
+        }
+        
+        if (importedData.categories) {
+          localStorage.setItem('categories', JSON.stringify(importedData.categories));
+        }
+        
+        if (importedData.pin) {
+          localStorage.setItem('financialPin', importedData.pin);
+        }
+        
+        // Reset the file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+        
+        toast.success("Data imported successfully", {
+          description: "Your data has been imported and is ready to use."
+        });
+      } catch (error) {
+        toast.error("Error importing data", {
+          description: "The file format is invalid. Please try with a proper LockBox export file."
+        });
+        console.error(error);
+      }
+    };
+    
+    reader.onerror = () => {
+      toast.error("Error reading file");
+    };
+    
+    reader.readAsText(file);
+  };
+  
+  const handleConfirmImport = () => {
+    if (pendingImportFile) {
+      // Process the import
+      processImport(pendingImportFile);
+      setPendingImportFile(null);
+      setShowImportConfirm(false);
+    } else {
+      toast.error("No file selected");
+    }
+  };
+  
+  const handleDeleteAllData = () => {
+    // Clear all localStorage data except for the theme preference
+    const theme = localStorage.getItem('theme');
+    localStorage.clear();
+    if (theme) {
+      localStorage.setItem('theme', theme);
+    }
+    
+    toast.success("All data has been deleted", {
+      description: "Your data has been removed from this device."
+    });
+    
+    setShowImportConfirm(false);
+  };
+  
   return (
     <div className="animate-fade-in">
       <h1 className="text-2xl font-bold mb-6">Settings</h1>
@@ -178,29 +198,6 @@ const Settings: React.FC = () => {
           </h2>
           
           <Card className="p-4 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <Label htmlFor="biometric" className="font-medium">Biometric Authentication</Label>
-                <p className="text-sm text-muted-foreground">Use fingerprint or Face ID to unlock</p>
-              </div>
-              <Switch 
-                id="biometric" 
-                onCheckedChange={handleBiometricToggle} 
-              />
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <Label htmlFor="auto-lock" className="font-medium">Auto-Lock</Label>
-                <p className="text-sm text-muted-foreground">Lock app when not in use</p>
-              </div>
-              <Switch 
-                id="auto-lock" 
-                defaultChecked 
-                onCheckedChange={handleAutoLockToggle} 
-              />
-            </div>
-            
             <div>
               <Label className="font-medium">Financial Section PIN</Label>
               <p className="text-sm text-muted-foreground mb-2">
@@ -274,7 +271,7 @@ const Settings: React.FC = () => {
             <div>
               <Label className="font-medium">Export Data</Label>
               <p className="text-sm text-muted-foreground mb-2">
-                Export all your passwords and financial data as an encrypted file
+                Export all your passwords and financial data as a file
               </p>
               <Button 
                 variant="outline" 
@@ -302,7 +299,7 @@ const Settings: React.FC = () => {
               <input 
                 type="file" 
                 ref={fileInputRef}
-                onChange={handleImportData}
+                onChange={handleImportFileSelected}
                 accept=".json"
                 style={{ display: 'none' }}
               />
@@ -341,13 +338,49 @@ const Settings: React.FC = () => {
         </section>
       </div>
       
+      {/* Import confirmation dialog */}
+      <Dialog open={showImportConfirm} onOpenChange={setShowImportConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Data Management</DialogTitle>
+          </DialogHeader>
+          <Alert variant="warning" className="my-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Warning</AlertTitle>
+            <AlertDescription>
+              {pendingImportFile ? (
+                <>
+                  Importing new data will overwrite your existing data. Make sure you have exported your current data if you want to keep it.
+                </>
+              ) : (
+                <>
+                  Would you like to clear your current data and import new data?
+                </>
+              )}
+            </AlertDescription>
+          </Alert>
+          
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowImportConfirm(false)}>Cancel</Button>
+            {pendingImportFile ? (
+              <Button onClick={handleConfirmImport}>Import Data</Button>
+            ) : (
+              <>
+                <Button variant="destructive" onClick={handleDeleteAllData}>Delete All Data</Button>
+                <Button onClick={handleImportClick}>Import New Data</Button>
+              </>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
       {/* Hidden file input for import */}
       <input 
         type="file" 
         ref={fileInputRef} 
         style={{ display: 'none' }} 
         accept=".json" 
-        onChange={handleImportData} 
+        onChange={handleImportFileSelected} 
       />
     </div>
   );

@@ -11,11 +11,12 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
-      position="top-center"
+      position="bottom-center"  
       expand={false}
       closeButton
       richColors
       duration={2000}
+      offset={80} // Add offset to keep toasts above navbar
       toastOptions={{
         classNames: {
           toast: "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
