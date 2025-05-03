@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -6,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Card } from '@/components/ui/card';
-import { Lock, Fingerprint, Shield, Trash, User, Key, Import, Export } from 'lucide-react';
+import { Lock, Fingerprint, Shield, Trash, User, Key, Import, FileDown, FileUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 
@@ -253,7 +252,7 @@ const Settings: React.FC = () => {
                 className="w-full flex items-center justify-center" 
                 onClick={handleExportData}
               >
-                <Export className="h-4 w-4 mr-2" />
+                <FileDown className="h-4 w-4 mr-2" />
                 Export Data
               </Button>
             </div>
@@ -268,7 +267,7 @@ const Settings: React.FC = () => {
                 className="w-full flex items-center justify-center" 
                 onClick={handleImportClick}
               >
-                <Import className="h-4 w-4 mr-2" />
+                <FileUp className="h-4 w-4 mr-2" />
                 Import Data
               </Button>
               <input 
