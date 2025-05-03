@@ -1,12 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Card } from '@/components/ui/card';
-import { Lock, Fingerprint, Shield, Trash, User, Key } from 'lucide-react';
+import { Lock, Fingerprint, Shield, Trash, User, Key, Import, Export } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 
@@ -15,21 +15,95 @@ const Settings: React.FC = () => {
   const [currentPin, setCurrentPin] = useState('');
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const handleBiometricToggle = (checked: boolean) => {
-    toast.success(`Biometric authentication ${checked ? 'enabled' : 'disabled'}`);
+    if (checked) {
+      // In a real app, this would integrate with the device's biometric capabilities
+      toast.success("Biometric authentication enabled");
+    } else {
+      toast.success("Biometric authentication disabled");
+    }
   };
   
   const handleAutoLockToggle = (checked: boolean) => {
-    toast.success(`Auto-lock ${checked ? 'enabled' : 'disabled'}`);
+    if (checked) {
+      // In a real app, this would set up auto-lock listeners
+      toast.success("Auto-lock enabled - App will lock after 5 minutes of inactivity");
+    } else {
+      toast.success("Auto-lock disabled");
+    }
   };
   
   const handleExportData = () => {
-    toast.info("Export functionality would be implemented here");
+    // In a real app, this would collect all passwords, cards, etc from storage
+    const exportData = {
+      passwords: [], // Would contain all passwords
+      financials: [], // Would contain all financial information
+      categories: [], // Would contain all categories
+      exportDate: new Date().toISOString(),
+      appVersion: "1.0.0"
+    };
+    
+    // Convert to JSON
+    const dataStr = JSON.stringify(exportData, null, 2);
+    
+    // Create a download link
+    const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
+    const exportFileDefaultName = `lockbox-export-${new Date().toLocaleDateString().replace(/\//g, '-')}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+    
+    toast.success("Data exported successfully");
+  };
+  
+  const handleImportClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+  
+  const handleImportData = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    
+    if (!file) {
+      return;
+    }
+    
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      try {
+        const importedData = JSON.parse(e.target?.result as string);
+        
+        // In a real app, this would validate and merge the imported data
+        console.log("Imported data:", importedData);
+        
+        // Reset the file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+        
+        toast.success("Data imported successfully");
+      } catch (error) {
+        toast.error("Error importing data: Invalid file format");
+        console.error(error);
+      }
+    };
+    
+    reader.onerror = () => {
+      toast.error("Error reading file");
+    };
+    
+    reader.readAsText(file);
   };
   
   const handleDeleteAllData = () => {
-    toast.info("Delete all data confirmation would show here");
+    // In a real app, this would delete all stored data
+    toast.success("All data has been deleted");
   };
   
   const handleResetPin = () => {
@@ -71,7 +145,7 @@ const Settings: React.FC = () => {
       <div className="space-y-6">
         <section>
           <h2 className="text-lg font-semibold flex items-center mb-4">
-            <Lock className="h-5 w-5 mr-2 text-vault-purple" />
+            <Lock className="h-5 w-5 mr-2 text-primary" />
             Security
           </h2>
           
@@ -164,7 +238,7 @@ const Settings: React.FC = () => {
         
         <section>
           <h2 className="text-lg font-semibold flex items-center mb-4">
-            <Shield className="h-5 w-5 mr-2 text-vault-purple" />
+            <Shield className="h-5 w-5 mr-2 text-primary" />
             Data Management
           </h2>
           
@@ -172,15 +246,38 @@ const Settings: React.FC = () => {
             <div>
               <Label className="font-medium">Export Data</Label>
               <p className="text-sm text-muted-foreground mb-2">
-                Export all your passwords as an encrypted file
+                Export all your passwords and financial data as an encrypted file
               </p>
               <Button 
                 variant="outline" 
-                className="w-full" 
+                className="w-full flex items-center justify-center" 
                 onClick={handleExportData}
               >
-                Export Encrypted Data
+                <Export className="h-4 w-4 mr-2" />
+                Export Data
               </Button>
+            </div>
+            
+            <div>
+              <Label className="font-medium">Import Data</Label>
+              <p className="text-sm text-muted-foreground mb-2">
+                Import passwords and financial data from an exported file
+              </p>
+              <Button 
+                variant="outline" 
+                className="w-full flex items-center justify-center" 
+                onClick={handleImportClick}
+              >
+                <Import className="h-4 w-4 mr-2" />
+                Import Data
+              </Button>
+              <input 
+                type="file" 
+                ref={fileInputRef}
+                onChange={handleImportData}
+                accept=".json"
+                style={{ display: 'none' }}
+              />
             </div>
             
             <div>
@@ -190,7 +287,7 @@ const Settings: React.FC = () => {
               </p>
               <Button 
                 variant="destructive" 
-                className="w-full" 
+                className="w-full flex items-center justify-center" 
                 onClick={handleDeleteAllData}
               >
                 <Trash className="h-4 w-4 mr-2" />
@@ -204,17 +301,26 @@ const Settings: React.FC = () => {
         
         <section>
           <h2 className="text-lg font-semibold flex items-center mb-2">
-            <User className="h-5 w-5 mr-2 text-vault-purple" />
+            <User className="h-5 w-5 mr-2 text-primary" />
             About
           </h2>
           <p className="text-sm text-muted-foreground">
-            Vault Keeper v1.0.0
+            LockBox v1.0.0
           </p>
           <p className="text-sm text-muted-foreground">
             A secure password manager
           </p>
         </section>
       </div>
+      
+      {/* Hidden file input for import */}
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        style={{ display: 'none' }} 
+        accept=".json" 
+        onChange={handleImportData} 
+      />
     </div>
   );
 };

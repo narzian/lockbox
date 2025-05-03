@@ -11,11 +11,22 @@ import { EmptyState } from '@/components/EmptyState';
 import { AddFinancialForm } from '@/components/AddFinancialForm';
 
 // Empty initial state
-const financialItems: { id: string; type: 'card' | 'upi' | 'account'; name: string; lastDigits?: string; expiryDate?: string; upiId?: string; accountNumber?: string; bankName?: string; }[] = [];
+const initialFinancialItems: { 
+  id: string; 
+  type: 'card' | 'upi' | 'account'; 
+  name: string; 
+  lastDigits?: string; 
+  expiryDate?: string; 
+  upiId?: string; 
+  accountNumber?: string; 
+  bankName?: string;
+  createdAt: string;
+  updatedAt: string;
+}[] = [];
 
 const Financials: React.FC = () => {
   const [unlocked, setUnlocked] = useState(false);
-  const [items, setItems] = useState(financialItems);
+  const [items, setItems] = useState(initialFinancialItems);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const navigate = useNavigate();
   
@@ -28,9 +39,17 @@ const Financials: React.FC = () => {
     toast.success("Financial section unlocked");
   };
   
-  const handleAddSuccess = () => {
-    // In a real app, this would fetch the updated list
-    // For now, we'll just show a success message
+  const handleAddSuccess = (newItem: any) => {
+    // Add timestamp data
+    const itemWithTimestamp = {
+      ...newItem,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    // Add the new item to the list
+    setItems(prevItems => [...prevItems, itemWithTimestamp]);
+    setIsAddDialogOpen(false);
     toast.success("Financial information saved");
   };
 

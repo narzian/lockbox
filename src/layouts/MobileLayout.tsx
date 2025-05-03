@@ -14,7 +14,7 @@ export const MobileLayout: React.FC = () => {
       <header className="sticky top-0 z-10 bg-card shadow-sm border-b border-border px-4 py-3 flex justify-between items-center">
         <div className="flex items-center gap-2">
           <Lock className="h-5 w-5 text-primary" />
-          <h1 className="text-lg font-semibold">Vault Keeper</h1>
+          <h1 className="text-lg font-semibold">LockBox</h1>
         </div>
         <ThemeToggle />
       </header>

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Copy, Trash, Edit, ExternalLink } from 'lucide-react';
+import { Eye, EyeOff, Copy, Trash, Edit, ExternalLink, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -30,6 +30,8 @@ const mockPasswords: {
   lastUsed: string;
   notes?: string;
   icon: string;
+  createdAt: string;
+  updatedAt: string;
 }[] = [];
 
 const PasswordDetail: React.FC = () => {
@@ -82,6 +84,11 @@ const PasswordDetail: React.FC = () => {
     } else if (password.url) {
       window.open(password.url, '_blank');
     }
+  };
+
+  // Format the dates to be more readable
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString();
   };
 
   // Detect if the service has a deep link or external URL
@@ -193,6 +200,18 @@ const PasswordDetail: React.FC = () => {
               </div>
             </div>
           )}
+          
+          {/* Timestamp information */}
+          <div className="pt-2">
+            <div className="flex items-center text-sm text-muted-foreground">
+              <Clock className="h-3.5 w-3.5 mr-1" />
+              <span>Created: {formatDate(password.createdAt)}</span>
+            </div>
+            <div className="flex items-center text-sm text-muted-foreground mt-1">
+              <Clock className="h-3.5 w-3.5 mr-1" />
+              <span>Last updated: {formatDate(password.updatedAt)}</span>
+            </div>
+          </div>
         </div>
       </Card>
       

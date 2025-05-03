@@ -1,12 +1,14 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { CategoryCard } from '@/components/dashboard/CategoryCard';
-import { CategoryTabs } from '@/components/dashboard/CategoryTabs';
+import { CategorySidebar } from '@/components/dashboard/CategorySidebar';
 import { CreateCategoryDialog } from '@/components/dashboard/CreateCategoryDialog';
 import { SortDropdown } from '@/components/dashboard/SortDropdown';
 import { EmptyState } from '@/components/EmptyState';
 import { LockKeyhole } from 'lucide-react';
+import { PasswordItem } from '@/components/PasswordItem';
 
 // Initial empty categories
 const initialCategories = [
@@ -53,6 +55,7 @@ const sortByRecent = (a: any, b: any, ascending = true) => {
 
 const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("All");
+  const [activeCategoryIndex, setActiveCategoryIndex] = useState<number>(0);
   const [viewMode, setViewMode] = useState<"category" | "passwords">("category");
   const [sortMode, setSortMode] = useState<"nameAsc" | "nameDesc" | "recentAsc" | "recentDesc">("nameAsc");
   const [categories, setCategories] = useState<string[]>(initialCategories);
@@ -96,19 +99,32 @@ const Dashboard: React.FC = () => {
   // Handle creating a new category
   const handleCreateCategory = (newCategory: string) => {
     if (!categories.includes(newCategory)) {
-      setCategories([...categories, newCategory]);
+      setCategories(prevCategories => [...prevCategories, newCategory]);
     }
   };
 
   // Handle view all passwords
   const handleViewAll = () => {
     setActiveTab("All");
+    setActiveCategoryIndex(0);
     setViewMode("passwords");
   };
 
   // Handle viewing a specific category
   const handleViewCategory = (category: string) => {
     setActiveTab(category);
+    setActiveCategoryIndex(categories.indexOf(category) + 1); // +1 because "All" is at index 0
+    setViewMode("passwords");
+  };
+
+  // Handle sidebar category selection
+  const handleSelectCategory = (index: number) => {
+    if (index === 0) {
+      setActiveTab("All");
+    } else {
+      setActiveTab(categories[index - 1]); // -1 because "All" is not in categories array
+    }
+    setActiveCategoryIndex(index);
     setViewMode("passwords");
   };
 
@@ -163,12 +179,36 @@ const Dashboard: React.FC = () => {
           )}
         </div>
       ) : (
-        <CategoryTabs 
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          categories={categories}
-          filteredPasswords={filteredPasswords}
-        />
+        <div className="relative">
+          {/* Category sidebar */}
+          <CategorySidebar 
+            categories={categories}
+            activeCategoryIndex={activeCategoryIndex}
+            onSelectCategory={handleSelectCategory}
+          />
+          
+          {/* Password list with sidebar margin */}
+          <div className="ml-10">
+            <h2 className="text-xl font-semibold mb-4">{activeTab}</h2>
+            {filteredPasswords.length === 0 ? (
+              <EmptyState 
+                title={`No passwords in ${activeTab}`}
+                description="Add your first password to this category"
+                actionLabel="Add Password"
+                onAction={() => { window.location.href = "/add"; }}
+                icon={<LockKeyhole size={40} />}
+              />
+            ) : (
+              <div className="grid gap-3 animate-slide-up">
+                {filteredPasswords.map(password => (
+                  <Link key={password.id} to={`/password/${password.id}`}>
+                    <PasswordItem password={password} />
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
