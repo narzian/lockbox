@@ -34,7 +34,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 interface AddFinancialFormProps {
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (newItem: any) => void; // Updated to accept the newItem parameter
 }
 
 export const AddFinancialForm: React.FC<AddFinancialFormProps> = ({ onClose, onSuccess }) => {
@@ -55,10 +55,18 @@ export const AddFinancialForm: React.FC<AddFinancialFormProps> = ({ onClose, onS
   });
   
   const onSubmit = (values: FormValues) => {
+    // Generate a unique ID for the new item
+    const newItem = {
+      ...values,
+      id: crypto.randomUUID(), // Add a unique ID
+    };
+    
     // In a real app, this would save to secure storage
-    console.log('Saving financial info:', values);
+    console.log('Saving financial info:', newItem);
     toast.success(`${values.name} added successfully`);
-    onSuccess();
+    
+    // Pass the new item to the parent component
+    onSuccess(newItem);
     onClose();
   };
   
