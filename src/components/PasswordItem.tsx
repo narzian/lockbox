@@ -1,8 +1,9 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, Building, Banknote, ShoppingCart, Facebook, Instagram } from 'lucide-react';
+import { BookOpen, Building, Banknote, ShoppingCart, Facebook, Instagram, Briefcase, Hash, Twitter, Film } from 'lucide-react';
 import { getCategoryIcon } from '@/utils/dashboard/storageUtils';
+import { detectService } from '@/lib/serviceDetection';
 
 export interface Password {
   id: string;
@@ -23,18 +24,33 @@ interface PasswordItemProps {
 export const PasswordItem: React.FC<PasswordItemProps> = ({ password }) => {
   // Render different icons based on the category
   const renderCategoryIcon = () => {
-    const iconName = getCategoryIcon(password.category);
-    
     // First check if the password has a specific service icon
     if (password.icon === 'facebook') {
       return <Facebook className="h-5 w-5 text-vault-black" />;
     } else if (password.icon === 'instagram') {
       return <Instagram className="h-5 w-5 text-vault-black" />;
+    } else if (password.icon === 'twitter') {
+      return <Twitter className="h-5 w-5 text-vault-black" />;
     } else if (password.icon === 'amazon') {
       return <ShoppingCart className="h-5 w-5 text-vault-black" />;
     }
     
-    // Otherwise use the category icon
+    // Check the category for a suitable icon
+    const lowerCategory = password.category.toLowerCase();
+    
+    if (lowerCategory.includes('social')) {
+      return <Hash className="h-5 w-5 text-vault-black" />;
+    } else if (lowerCategory.includes('shop')) {
+      return <ShoppingCart className="h-5 w-5 text-vault-black" />;
+    } else if (lowerCategory.includes('work')) {
+      return <Briefcase className="h-5 w-5 text-vault-black" />;
+    } else if (lowerCategory.includes('entertain')) {
+      return <Film className="h-5 w-5 text-vault-black" />;
+    }
+    
+    // Otherwise use the standard category icon
+    const iconName = getCategoryIcon(password.category);
+    
     switch(iconName) {
       case 'book':
         return <BookOpen className="h-5 w-5 text-vault-black" />;

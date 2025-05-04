@@ -19,9 +19,15 @@ export type PasswordItem = {
 // Category to icon mapping
 export const getCategoryIcon = (category: string): string => {
   const lowerCategory = category.toLowerCase();
+  
+  if (lowerCategory.includes('social')) return 'hash';
   if (lowerCategory.includes('finance') || lowerCategory.includes('bank')) return 'banknote';
+  if (lowerCategory.includes('work')) return 'briefcase';
+  if (lowerCategory.includes('shop')) return 'cart';
   if (lowerCategory.includes('education') || lowerCategory.includes('school') || lowerCategory.includes('college')) return 'book';
   if (lowerCategory.includes('government') || lowerCategory.includes('gov')) return 'building';
+  if (lowerCategory.includes('entertain')) return 'film';
+  
   // For custom categories, use the first letter
   return category.charAt(0).toUpperCase();
 };

@@ -6,8 +6,16 @@ import {
   PopoverTrigger 
 } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, BookOpen, Banknote, Building } from 'lucide-react';
-import { getCategoryIcon } from '@/utils/dashboard/storageUtils';
+import { 
+  ChevronDown, 
+  BookOpen, 
+  Banknote, 
+  Building, 
+  ShoppingCart, 
+  Briefcase, 
+  Hash, 
+  Film 
+} from 'lucide-react';
 
 interface CategoryDropdownProps {
   categories: string[];
@@ -22,18 +30,26 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
 }) => {
   // Render icon based on category
   const renderCategoryIcon = (category: string) => {
-    const iconName = getCategoryIcon(category);
+    const lowerCategory = category.toLowerCase();
     
-    switch(iconName) {
-      case 'book':
-        return <BookOpen size={16} />;
-      case 'banknote':
-        return <Banknote size={16} />;
-      case 'building':
-        return <Building size={16} />;
-      default:
-        return <span>{iconName}</span>;
+    if (lowerCategory.includes('social')) {
+      return <Hash size={16} />;
+    } else if (lowerCategory.includes('finance') || lowerCategory.includes('bank')) {
+      return <Banknote size={16} />;
+    } else if (lowerCategory.includes('work')) {
+      return <Briefcase size={16} />;
+    } else if (lowerCategory.includes('shop')) {
+      return <ShoppingCart size={16} />;
+    } else if (lowerCategory.includes('education') || lowerCategory.includes('school') || lowerCategory.includes('college')) {
+      return <BookOpen size={16} />;
+    } else if (lowerCategory.includes('government') || lowerCategory.includes('gov')) {
+      return <Building size={16} />;
+    } else if (lowerCategory.includes('entertain')) {
+      return <Film size={16} />;
     }
+    
+    // For custom categories, use the first letter
+    return <span>{category.charAt(0).toUpperCase()}</span>;
   };
 
   return (
