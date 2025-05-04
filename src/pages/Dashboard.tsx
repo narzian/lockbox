@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,7 @@ import { CategorySidebar } from '@/components/dashboard/CategorySidebar';
 import { CreateCategoryDialog } from '@/components/dashboard/CreateCategoryDialog';
 import { SortDropdown } from '@/components/dashboard/SortDropdown';
 import { EmptyState } from '@/components/EmptyState';
-import { LockKeyhole } from 'lucide-react';
+import { LockKeyhole, ArrowDown } from 'lucide-react';
 import { PasswordItem } from '@/components/PasswordItem';
 
 // Initial empty categories
@@ -193,10 +192,11 @@ const Dashboard: React.FC = () => {
           {categoryCounts["All"] === 0 ? (
             <EmptyState 
               title="No passwords saved yet"
-              description="Add your first password to get started"
-              actionLabel="Add Password"
-              onAction={() => { window.location.href = "/add"; }}
-              icon={<LockKeyhole size={40} />}
+              description="Use the Add button in the navigation bar below to add your first password"
+              icon={<div className="flex flex-col items-center">
+                <LockKeyhole size={40} />
+                <ArrowDown size={20} className="mt-2 animate-bounce" />
+              </div>}
             />
           ) : (
             <div className="grid grid-cols-2 gap-3 animate-slide-up">
@@ -226,10 +226,11 @@ const Dashboard: React.FC = () => {
             {filteredPasswords.length === 0 ? (
               <EmptyState 
                 title={`No passwords in ${activeTab}`}
-                description="Add your first password to this category"
-                actionLabel="Add Password"
-                onAction={() => { window.location.href = "/add"; }}
-                icon={<LockKeyhole size={40} />}
+                description="Use the Add button in the navigation bar below to add a password to this category"
+                icon={<div className="flex flex-col items-center">
+                  <LockKeyhole size={40} />
+                  <ArrowDown size={20} className="mt-2 animate-bounce" />
+                </div>}
               />
             ) : (
               <div className="grid gap-3 animate-slide-up">
