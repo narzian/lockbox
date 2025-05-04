@@ -16,6 +16,16 @@ export type PasswordItem = {
   updatedAt?: string;
 };
 
+// Category to icon mapping
+export const getCategoryIcon = (category: string): string => {
+  const lowerCategory = category.toLowerCase();
+  if (lowerCategory.includes('finance') || lowerCategory.includes('bank')) return 'banknote';
+  if (lowerCategory.includes('education') || lowerCategory.includes('school') || lowerCategory.includes('college')) return 'book';
+  if (lowerCategory.includes('government') || lowerCategory.includes('gov')) return 'building';
+  // For custom categories, use the first letter
+  return category.charAt(0).toUpperCase();
+};
+
 export const mockPasswords: PasswordItem[] = [];
 
 // Save data to localStorage
