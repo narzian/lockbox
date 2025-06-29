@@ -83,11 +83,43 @@
     text-transform: none !important;
     letter-spacing: normal !important;
   }
+
+  /* Focus styles for accessibility */
+  *:focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+
+  /* Improved button focus styles */
+  button:focus-visible,
+  [role="button"]:focus-visible {
+    @apply ring-2 ring-ring ring-offset-2;
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    :root {
+      --border: 240 10% 70%;
+    }
+    .dark {
+      --border: 240 10% 40%;
+    }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
 
 @layer components {
   .vault-card {
-    @apply bg-card rounded-xl shadow-sm border border-border p-4 transition-all duration-300 hover:shadow-md;
+    @apply bg-card rounded-xl shadow-sm border border-border p-4 transition-all duration-300 hover:shadow-md focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2;
   }
   
   .category-pill {
@@ -95,32 +127,97 @@
   }
   
   .bottom-nav-item {
-    @apply flex flex-col items-center justify-center w-full py-2;
+    @apply flex flex-col items-center justify-center w-full py-2 min-h-[44px] transition-colors duration-200 hover:bg-accent/50 active:bg-accent rounded-lg;
   }
   
-  .dropdown {
-    position: relative;
-  }
-  
-  .dropdown-menu {
-    display: none;
-    position: absolute;
-    right: 0;
-    margin-top: 0.5rem;
-    width: 12rem;
-    border-radius: 0.375rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    background-color: white;
-    z-index: 10;
+  /* Safe area padding for devices with notches */
+  .safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom, 0);
   }
 
-  /* Add hover state for dropdown menu */
-  .dropdown:hover .dropdown-menu {
-    display: block;
+  .safe-area-pt {
+    padding-top: env(safe-area-inset-top, 0);
   }
 
-  /* Fix for Back button text */
-  .back-button {
-    @apply font-sans tracking-normal text-base !important;
+  /* Loading states */
+  .loading-pulse {
+    @apply animate-pulse bg-muted;
+  }
+
+  /* Error states */
+  .error-text {
+    @apply text-destructive text-sm flex items-center gap-1;
+  }
+
+  /* Responsive text sizing */
+  .text-responsive {
+    @apply text-sm md:text-base;
+  }
+
+  /* Skip link for screen readers */
+  .skip-link {
+    @apply absolute -top-full left-4 bg-primary text-primary-foreground px-4 py-2 rounded-md z-50 focus:top-4 transition-all;
+  }
+
+  /* Focus trap for modals */
+  .focus-trap {
+    @apply focus:outline-none;
+  }
+
+  /* Touch targets */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* High contrast borders */
+  .hc-border {
+    @apply border-2 border-border;
+  }
+
+  @media (prefers-contrast: high) {
+    .hc-border {
+      @apply border-foreground;
+    }
+  }
+}
+
+/* Custom scrollbar for webkit browsers */
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted)) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted));
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--muted-foreground));
+  }
+
+  /* Utilities for responsive design */
+  .container-responsive {
+    @apply w-full max-w-screen-sm mx-auto px-4 sm:px-6;
+  }
+
+  /* Animation utilities with reduced motion support */
+  .animate-fade-in-reduced {
+    animation: fade-in 0.3s ease-out;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fade-in-reduced {
+      animation: none;
+    }
   }
 }

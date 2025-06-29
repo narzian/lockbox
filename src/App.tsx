@@ -17,8 +17,10 @@ import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { MasterPasswordSetup } from "./components/MasterPasswordSetup";
 import { MasterPasswordLogin } from "./components/MasterPasswordLogin";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { useAutoLock } from "./hooks/useAutoLock";
 import { secureStorage } from "./utils/secureStorage";
+import { LoadingState } from "./components/ui/loading";
 
 // Create a more resilient query client with retry logic
 const queryClient = new QueryClient({
@@ -45,15 +47,25 @@ const AppContent = () => {
   });
 
   useEffect(() => {
-    // Check if app is initialized (master password set)
-    const initialized = localStorage.getItem('appInitialized') === 'true';
-    setIsInitialized(initialized);
+    const initializeApp = async () => {
+      try {
+        // Check if app is initialized (master password set)
+        const initialized = localStorage.getItem('appInitialized') === 'true';
+        setIsInitialized(initialized);
 
-    // Check if user is authenticated in current session
-    const authenticated = sessionStorage.getItem('isAuthenticated') === 'true';
-    setIsAuthenticated(authenticated);
+        // Check if user is authenticated in current session
+        const authenticated = sessionStorage.getItem('isAuthenticated') === 'true';
+        setIsAuthenticated(authenticated);
+      } catch (error) {
+        console.error('Failed to initialize app:', error);
+        setIsInitialized(false);
+        setIsAuthenticated(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    setIsLoading(false);
+    initializeApp();
   }, []);
 
   const handleSetupComplete = () => {
@@ -61,15 +73,19 @@ const AppContent = () => {
   };
 
   const handleLoginSuccess = (encryptionKey: string) => {
-    secureStorage.setEncryptionKey(encryptionKey);
-    secureStorage.migrateUnencryptedData(); // Migrate existing data
-    setIsAuthenticated(true);
+    try {
+      secureStorage.setEncryptionKey(encryptionKey);
+      secureStorage.migrateUnencryptedData(); // Migrate existing data
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error('Login failed:', error);
+    }
   };
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <LoadingState message="Initializing secure vault..." />
       </div>
     );
   }
@@ -87,6 +103,11 @@ const AppContent = () => {
   // Show main app
   return (
     <BrowserRouter>
+      {/* Skip link for accessibility */}
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
+      
       <Routes>
         <Route path="/" element={<Index />} />
         <Route element={<MobileLayout />}>
@@ -104,15 +125,17 @@ const AppContent = () => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="light">
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <AppContent />
-      </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="light">
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <AppContent />
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
