@@ -1,4 +1,6 @@
 
+import { secureStorage } from '../secureStorage';
+
 // Initial data and storage utilities
 export const initialCategories = [
   "Social", "Finance", "Work", "Shopping", "Education", "Government", "Entertainment"
@@ -34,24 +36,44 @@ export const getCategoryIcon = (category: string): string => {
 
 export const mockPasswords: PasswordItem[] = [];
 
-// Save data to localStorage
+// Save data using secure storage
 export const saveCategories = (categories: string[]) => {
-  localStorage.setItem('categories', JSON.stringify(categories));
+  if (secureStorage.isEncryptionReady()) {
+    secureStorage.saveCategories(categories);
+  } else {
+    // Fallback to localStorage if encryption not ready
+    localStorage.setItem('categories', JSON.stringify(categories));
+  }
 };
 
 export const savePasswords = (passwords: PasswordItem[]) => {
-  localStorage.setItem('passwords', JSON.stringify(passwords));
+  if (secureStorage.isEncryptionReady()) {
+    secureStorage.savePasswords(passwords);
+  } else {
+    // Fallback to localStorage if encryption not ready
+    localStorage.setItem('passwords', JSON.stringify(passwords));
+  }
 };
 
-// Load data from localStorage
+// Load data using secure storage
 export const loadCategories = (): string[] => {
-  const storedCategories = localStorage.getItem('categories');
-  return storedCategories ? JSON.parse(storedCategories) : initialCategories;
+  if (secureStorage.isEncryptionReady()) {
+    return secureStorage.loadCategories();
+  } else {
+    // Fallback to localStorage
+    const storedCategories = localStorage.getItem('categories');
+    return storedCategories ? JSON.parse(storedCategories) : initialCategories;
+  }
 };
 
 export const loadPasswords = (): PasswordItem[] => {
-  const storedPasswords = localStorage.getItem('passwords');
-  return storedPasswords ? JSON.parse(storedPasswords) : mockPasswords;
+  if (secureStorage.isEncryptionReady()) {
+    return secureStorage.loadPasswords();
+  } else {
+    // Fallback to localStorage
+    const storedPasswords = localStorage.getItem('passwords');
+    return storedPasswords ? JSON.parse(storedPasswords) : mockPasswords;
+  }
 };
 
 // Get counts of passwords per category
