@@ -116,7 +116,7 @@ export const PasswordGenerator: React.FC<PasswordGeneratorProps> = ({
             <Checkbox
               id="uppercase"
               checked={includeUppercase}
-              onCheckedChange={setIncludeUppercase}
+              onCheckedChange={(checked) => setIncludeUppercase(checked === true)}
             />
             <Label htmlFor="uppercase">Uppercase letters (A-Z)</Label>
           </div>
@@ -125,7 +125,7 @@ export const PasswordGenerator: React.FC<PasswordGeneratorProps> = ({
             <Checkbox
               id="lowercase"
               checked={includeLowercase}
-              onCheckedChange={setIncludeLowercase}
+              onCheckedChange={(checked) => setIncludeLowercase(checked === true)}
             />
             <Label htmlFor="lowercase">Lowercase letters (a-z)</Label>
           </div>
@@ -134,7 +134,7 @@ export const PasswordGenerator: React.FC<PasswordGeneratorProps> = ({
             <Checkbox
               id="numbers"
               checked={includeNumbers}
-              onCheckedChange={setIncludeNumbers}
+              onCheckedChange={(checked) => setIncludeNumbers(checked === true)}
             />
             <Label htmlFor="numbers">Numbers (0-9)</Label>
           </div>
@@ -143,7 +143,7 @@ export const PasswordGenerator: React.FC<PasswordGeneratorProps> = ({
             <Checkbox
               id="symbols"
               checked={includeSymbols}
-              onCheckedChange={setIncludeSymbols}
+              onCheckedChange={(checked) => setIncludeSymbols(checked === true)}
             />
             <Label htmlFor="symbols">Symbols (!@#$%^&*)</Label>
           </div>
@@ -152,7 +152,7 @@ export const PasswordGenerator: React.FC<PasswordGeneratorProps> = ({
             <Checkbox
               id="exclude-ambiguous"
               checked={excludeAmbiguous}
-              onCheckedChange={setExcludeAmbiguous}
+              onCheckedChange={(checked) => setExcludeAmbiguous(checked === true)}
             />
             <Label htmlFor="exclude-ambiguous">Exclude ambiguous characters (0, O, 1, l, I)</Label>
           </div>
